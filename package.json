@@ -1,0 +1,26 @@
+{
+  "name": "familypantry",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently -n \"Server,Client\" -c \"bgRed,bgGreen\" \"npm run server\" \"npm run client\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lulMen/FamilyPantry.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/lulMen/FamilyPantry/issues"
+  },
+  "homepage": "https://github.com/lulMen/FamilyPantry#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
