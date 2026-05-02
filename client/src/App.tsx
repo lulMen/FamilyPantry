@@ -4,16 +4,6 @@ import axios from "axios";
 import "./App.css";
 
 function App() {
-  // useEffect(
-  //   async () => {
-  //     const response = await axios.get("/api");
-  //   },
-
-  //   () => {
-  //     console.log("response: ", response);
-  //   }
-  // );
-
   useEffect(() => {
     const fetchData = async () => {
       try {
