@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const GroceryListItem = require("../models/GroceryListItem");
+const GroceryListItem = require("../models/GroceryListItem.model");
 
 router.get("/", async (req, res) => {
   res.status(200).json({ message: "Grocery List Item endpoint is working!" });

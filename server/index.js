@@ -2,11 +2,11 @@ require("dotenv").config();
 
 const express = require("express");
 
-require("./config/db")();
-const inventoryRoutes = require("./routes/inventory");
-const recipeRoutes = require("./routes/recipe");
-const groceryListItemRoutes = require("./routes/groceryListItem");
-const groceryListRoutes = require("./routes/groceryList");
+require("./config/db.config")();
+const inventoryRoutes = require("./routes/inventories.routes");
+const recipeRoutes = require("./routes/recipes.routes");
+const groceryListItemRoutes = require("./routes/groceryListItems.routes");
+const groceryListRoutes = require("./routes/groceryLists.routes");
 
 const app = express();
 

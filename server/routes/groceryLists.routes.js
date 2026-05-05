@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const Inventory = require("../models/Inventory");
+const GroceryList = require("../models/GroceryList.model");
 
 router.get("/", async (req, res) => {
-  res.status(200).json({ message: "Inventory endpoint is working!" });
+  res.status(200).json({ message: "Grocery List endpoint is working!" });
 });
 
 module.exports = router;
