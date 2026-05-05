@@ -13,9 +13,9 @@ const recipeSchema = new mongoose.Schema(
     },
     ingredients: [
       {
-        inventoryId: {
+        pantryId: {
           type: mongoose.Schema.Types.ObjectId,
-          ref: "Inventory",
+          ref: "Pantry",
           default: null,
         },
         name: {

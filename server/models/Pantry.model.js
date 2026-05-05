@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 
-const inventorySchema = new mongoose.Schema(
+const pantrySchema = new mongoose.Schema(
   {
     name: {
       type: String,
@@ -51,4 +51,4 @@ const inventorySchema = new mongoose.Schema(
   },
 );
 
-module.exports = mongoose.model("Inventory", inventorySchema);
+module.exports = mongoose.model("Pantry", pantrySchema);

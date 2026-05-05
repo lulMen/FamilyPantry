@@ -3,7 +3,7 @@ require("dotenv").config();
 const express = require("express");
 
 require("./config/db.config")();
-const inventoryRoutes = require("./routes/inventories.routes");
+const pantryRoutes = require("./routes/pantries.routes");
 const recipeRoutes = require("./routes/recipes.routes");
 const groceryListItemRoutes = require("./routes/groceryListItems.routes");
 const groceryListRoutes = require("./routes/groceryLists.routes");
@@ -18,7 +18,7 @@ app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
 
-app.use("/api/inventory", inventoryRoutes);
+app.use("/api/pantry", pantryRoutes);
 app.use("/api/recipe", recipeRoutes);
 app.use("/api/grocery-list-item", groceryListItemRoutes);
 app.use("/api/grocery-list", groceryListRoutes);

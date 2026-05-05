@@ -11,9 +11,9 @@ const groceryListItemSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    inventoryId: {
+    pantryId: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Inventory",
+      ref: "Pantry",
     },
     measurement: {
       type: String,
