@@ -25,6 +25,9 @@ const groceryListItemSchema = new mongoose.Schema(
         "Teaspoons",
         "Tablespoons",
         "Each",
+        "Kilograms",
+        "Liters",
+        "Pieces",
       ],
     },
     type: {

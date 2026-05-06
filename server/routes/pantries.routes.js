@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const Pantry = require("../models/Pantry.model");
+
+const pantryController = require("../controllers/pantry.controller");
+
+router.get("/test", pantryController.testAPI);
 
 router.get("/", async (req, res) => {
-  res.status(200).json({ message: "Inventory endpoint is working!" });
+  res.status(200).json({ message: "Pantry endpoint is working!" });
 });
 
 module.exports = router;

@@ -1,6 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
+const errorHandler = require("./middleware/errorHandler.middleware");
 
 require("./config/db.config")();
 const pantryRoutes = require("./routes/pantries.routes");
@@ -18,10 +19,12 @@ app.get("/", (req, res) => {
   res.send("Hello, World!");
 });
 
-app.use("/api/pantry", pantryRoutes);
-app.use("/api/recipe", recipeRoutes);
-app.use("/api/grocery-list-item", groceryListItemRoutes);
-app.use("/api/grocery-list", groceryListRoutes);
+app.use("/api/pantries", pantryRoutes);
+app.use("/api/recipes", recipeRoutes);
+app.use("/api/grocery-list-items", groceryListItemRoutes);
+app.use("/api/grocery-lists", groceryListRoutes);
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);

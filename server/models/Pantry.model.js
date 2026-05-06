@@ -14,7 +14,18 @@ const pantrySchema = new mongoose.Schema(
     },
     measurement: {
       type: String,
-      enum: ["Pounds", "Grams", "Ounces", "Kilograms", "Liters", "Pieces"],
+      enum: [
+        "Pounds",
+        "Grams",
+        "Ounces",
+        "Cups",
+        "Teaspoons",
+        "Tablespoons",
+        "Each",
+        "Kilograms",
+        "Liters",
+        "Pieces",
+      ],
       required: true,
     },
     acquiredDate: {
@@ -32,6 +43,15 @@ const pantrySchema = new mongoose.Schema(
     storageLocation: {
       type: String,
       trim: true,
+    },
+    minStockLevel: {
+      type: Number,
+      min: 0,
+    },
+    trackStock: {
+      type: Boolean,
+      default: false,
+      required: true,
     },
     cost: {
       type: Number,
