@@ -1,0 +1,39 @@
+@baseUrl = http://localhost:3000
+@id = 69fbb181e6047ee2faca1a94
+
+### Get all pantry items
+GET {{baseUrl}}/api/pantries
+
+### Get a pantry item by ID
+GET {{baseUrl}}/api/pantries/{{id}}
+
+### Create a new pantry item
+POST {{baseUrl}}/api/pantries
+Content-Type: application/json
+
+{
+  "name": "Test Pantry Item",
+  "quantity": 5,
+  "measurement": "Each",
+  "storageType": "Dry",
+  "storageLocation": "Kitchen",
+  "trackStock": true
+}
+
+### Update a pantry item
+PUT {{baseUrl}}/api/pantries/{{id}}
+Content-Type: application/json
+
+{
+  "name": "Updated Pantry Item",
+  "quantity": 9,
+  "measurement": "Each",
+  "storageType": "Fresh",
+  "storageLocation": "Kitchen",
+  "trackStock": false
+}
+
+### Delete a pantry item
+DELETE {{baseUrl}}/api/pantries/{{id}}
+
+### Error handling tests
