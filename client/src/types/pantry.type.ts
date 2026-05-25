@@ -1,14 +1,14 @@
 export type Measurement =
-  | "pounds"
-  | "grams"
-  | "ounces"
-  | "cups"
-  | "teaspoons"
-  | "tablespoons"
+  | "pound"
+  | "gram"
+  | "ounce"
+  | "cup"
+  | "teaspoon"
+  | "tablespoon"
   | "each"
-  | "kilograms"
-  | "liters"
-  | "pieces";
+  | "kilogram"
+  | "liter"
+  | "piece";
 
 export type StorageType =
   | "Canned"

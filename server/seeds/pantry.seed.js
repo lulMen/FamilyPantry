@@ -8,7 +8,7 @@ const pantryItems = [
   {
     name: "Chicken Breast",
     quantity: 3,
-    measurement: "Pounds",
+    measurement: "pound",
     storageType: "Frozen",
     storageLocation: "Chest Freezer",
     expirationDate: new Date("2025-09-01"),
@@ -19,7 +19,7 @@ const pantryItems = [
   {
     name: "Olive Oil",
     quantity: 1,
-    measurement: "Liters",
+    measurement: "liter",
     storageType: "Dry",
     storageLocation: "Pantry Cabinet",
     cost: 6.49,
@@ -28,7 +28,7 @@ const pantryItems = [
   {
     name: "Black Beans",
     quantity: 4,
-    measurement: "Each",
+    measurement: "each",
     storageType: "Canned",
     storageLocation: "Pantry Cabinet",
     expirationDate: new Date("2026-12-01"),
@@ -39,7 +39,7 @@ const pantryItems = [
   {
     name: "Whole Milk",
     quantity: 1,
-    measurement: "Liters",
+    measurement: "liter",
     storageType: "Refrigerated",
     storageLocation: "Fridge",
     expirationDate: new Date("2025-06-10"),
@@ -50,7 +50,7 @@ const pantryItems = [
   {
     name: "All Purpose Flour",
     quantity: 2,
-    measurement: "Pounds",
+    measurement: "pound",
     storageType: "Dry",
     storageLocation: "Pantry Cabinet",
     cost: 2.99,

@@ -1,23 +1,13 @@
-import { useEffect } from "react";
-import axios from "axios";
-
-import "./App.css";
+import PantryManager from "./features/pantry/components/PantryManager";
 
 function App() {
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get("/api");
-        console.log("response: ", response);
-      } catch (error) {
-        console.error("Error fetching data: ", error);
-      }
-    };
-
-    fetchData();
-  }, []);
-
-  return null;
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <main>
+        <PantryManager />
+      </main>
+    </div>
+  );
 }
 
 export default App;

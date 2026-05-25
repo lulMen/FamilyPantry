@@ -1,7 +1,7 @@
 @baseUrl = http://localhost:3000
-@id = 69fbb181e6047ee2faca1a94
+@id = 69fb3bcccae345d63ce0e09a
 
-### Get all pantry items
+### Get all pantry items      
 GET {{baseUrl}}/api/pantries
 
 ### Get a pantry item by ID
@@ -37,3 +37,4 @@ Content-Type: application/json
 DELETE {{baseUrl}}/api/pantries/{{id}}
 
 ### Error handling tests
+DELETE {{baseUrl}}/api/pantries/invalid-id
