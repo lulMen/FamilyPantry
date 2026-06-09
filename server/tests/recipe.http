@@ -1,23 +1,36 @@
 @baseUrl = http://localhost:3000
 @id = 6a1f94bfc64d4322422dd66b
 
-### Get all recipes      
+### Get all recipes
 GET {{baseUrl}}/api/recipes
 
 ### Get a recipe by ID
 GET {{baseUrl}}/api/recipes/{{id}}
 
 ### Create a new recipe
-POST {{baseUrl}}/api/pantries
+POST {{baseUrl}}/api/recipes
 Content-Type: application/json
 
 {
-  "name": "Test Pantry Item",
-  "quantity": 5,
-  "measurement": "Each",
-  "storageType": "Dry",
-  "storageLocation": "Kitchen",
-  "trackStock": true
+  "name": "Garlic Butter Chicken",
+  "description": "A simple pan-seared chicken breast with a rich garlic butter sauce.",
+  "ingredients": [
+    { "name": "Chicken Breast", "ingredientsQuantity": 2, "ingredientsMeasurements": "each" },
+    { "name": "Butter", "ingredientsQuantity": 2, "ingredientsMeasurements": "tablespoon" },
+    { "name": "Garlic Cloves", "ingredientsQuantity": 4, "ingredientsMeasurements": "each" },
+    { "name": "Olive Oil", "ingredientsQuantity": 1, "ingredientsMeasurements": "tablespoon" },
+    { "name": "Salt", "ingredientsQuantity": 1, "ingredientsMeasurements": "teaspoon" }
+  ],
+  "instructions": [
+    { "description": "Season chicken breasts on both sides with salt." },
+    { "description": "Heat olive oil in a skillet over medium-high heat." },
+    { "description": "Sear chicken for 6-7 minutes per side until cooked through." }
+  ],
+  "notes": [
+    { "description": "Pairs well with roasted vegetables or rice." }
+  ],
+  "prepTime": 10,
+  "cookTime": 20
 }
 
 ### Update a recipe
@@ -25,12 +38,16 @@ PUT {{baseUrl}}/api/recipes/{{id}}
 Content-Type: application/json
 
 {
-  "name": "Updated Recipe",
-  "quantity": 9,
-  "measurement": "Each",
-  "storageType": "Fresh",
-  "storageLocation": "Kitchen",
-  "trackStock": false
+  "name": "Garlic Butter Chicken (Updated)",
+  "ingredients": [
+    { "name": "Chicken Breast", "ingredientsQuantity": 3, "ingredientsMeasurements": "each" },
+    { "name": "Butter", "ingredientsQuantity": 3, "ingredientsMeasurements": "tablespoon" },
+    { "name": "Garlic Cloves", "ingredientsQuantity": 5, "ingredientsMeasurements": "each" },
+    { "name": "Olive Oil", "ingredientsQuantity": 1, "ingredientsMeasurements": "tablespoon" },
+    { "name": "Salt", "ingredientsQuantity": 1, "ingredientsMeasurements": "teaspoon" }
+  ],
+  "prepTime": 15,
+  "cookTime": 25
 }
 
 ### Delete a recipe

@@ -15,7 +15,7 @@ const createRecipe = async (req, res) => {
   const recipeData = { ...req.body };
 
   if (recipeData.ingredients?.length) {
-    const nutrition = await fetchNutritionData(RecipeData.ingredients);
+    const nutrition = await fetchNutritionData(recipeData.ingredients);
     if (nutrition) Object.assign(recipeData, nutrition);
   }
 
