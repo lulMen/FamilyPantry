@@ -1,9 +1,13 @@
 const express = require("express");
 const router = express.Router();
-const Recipe = require("../models/Recipe.model");
 
-router.get("/", async (req, res) => {
-  res.status(200).json({ message: "Recipe endpoint is working!" });
-});
+const recipeController = require("../controllers/recipe.controller");
+
+// Define routes for recipes
+router.get("/", recipeController.getAllRecipes);
+router.get("/:id", recipeController.getRecipeById);
+router.post("/", recipeController.createRecipe);
+router.put("/:id", recipeController.updateRecipe);
+router.delete("/:id", recipeController.deleteRecipe);
 
 module.exports = router;

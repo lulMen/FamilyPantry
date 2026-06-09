@@ -3,6 +3,7 @@ const router = express.Router();
 
 const pantryController = require("../controllers/pantry.controller");
 
+// Define routes for pantry items
 router.get("/", pantryController.getAllPantryItems);
 router.get("/:id", pantryController.getPantryItemById);
 router.post("/", pantryController.createPantryItem);

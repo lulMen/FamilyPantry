@@ -1,0 +1,40 @@
+@baseUrl = http://localhost:3000
+@id = 6a1f94bfc64d4322422dd66b
+
+### Get all recipes      
+GET {{baseUrl}}/api/recipes
+
+### Get a recipe by ID
+GET {{baseUrl}}/api/recipes/{{id}}
+
+### Create a new recipe
+POST {{baseUrl}}/api/pantries
+Content-Type: application/json
+
+{
+  "name": "Test Pantry Item",
+  "quantity": 5,
+  "measurement": "Each",
+  "storageType": "Dry",
+  "storageLocation": "Kitchen",
+  "trackStock": true
+}
+
+### Update a recipe
+PUT {{baseUrl}}/api/recipes/{{id}}
+Content-Type: application/json
+
+{
+  "name": "Updated Recipe",
+  "quantity": 9,
+  "measurement": "Each",
+  "storageType": "Fresh",
+  "storageLocation": "Kitchen",
+  "trackStock": false
+}
+
+### Delete a recipe
+DELETE {{baseUrl}}/api/recipes/{{id}}
+
+### Error handling tests
+DELETE {{baseUrl}}/api/recipes/invalid-id
