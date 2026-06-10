@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000
-@id = 6a1f94bfc64d4322422dd66b
+@id = 6a28eff9c300d7d99fa9a2a8
 
 ### Get all recipes
 GET {{baseUrl}}/api/recipes
