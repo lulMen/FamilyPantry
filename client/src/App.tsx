@@ -1,14 +1,24 @@
-import PantryManager from "./features/pantry/components/PantryManager";
-import RecipeManager from "./features/recipe/components/RecipeManager";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import NavBar from "./components/navBar";
+import PantryPage from "./pages/pantry.page";
+import RecipePage from "./pages/recipe.page";
+import ShoppingListPage from "./pages/shoppingList.page";
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <main>
-        <PantryManager />
-        <RecipeManager />
-      </main>
-    </div>
+    <BrowserRouter>
+      <div className="min-h-screen bg-gray-50">
+        <NavBar />
+        <main className="p-6">
+          <Routes>
+            <Route path="/" element={<Navigate to="/pantry" replace />} />
+            <Route path="/pantry" element={<PantryPage />} />
+            <Route path="/recipes" element={<RecipePage />} />
+            <Route path="/shopping-lists" element={<ShoppingListPage />} />
+          </Routes>
+        </main>
+      </div>
+    </BrowserRouter>
   );
 }
 
