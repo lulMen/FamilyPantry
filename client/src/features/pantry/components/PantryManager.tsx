@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { type PantryItem } from "../../../types/pantry.type";
 import {
   getAllPantryItems,
@@ -20,14 +20,26 @@ import {
   DialogTitle,
 } from "../../../components/ui/dialog";
 
+type SortKey = "name" | "quantity" | "acquiredDate" | "expirationDate";
+type SortDirection = "asc" | "desc";
+
+interface SortConfig {
+  key: SortKey;
+  direction: SortDirection;
+}
+
 function PantryManager() {
   const [items, setItems] = useState<PantryItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<PantryItem | null>(null);
   const [formMode, setFormMode] = useState<"add" | "edit" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filterText, setFilterText] = useState("");
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: "name",
+    direction: "asc",
+  });
 
-  // Fetch pantry items on component mount
   useEffect(() => {
     const fetchPantryItems = async () => {
       setIsLoading(true);
@@ -41,11 +53,39 @@ function PantryManager() {
         setIsLoading(false);
       }
     };
-
     fetchPantryItems();
   }, []);
 
-  // Handler functions for selecting, adding, updating, and deleting pantry items
+  const displayedItems = useMemo(() => {
+    let result = [...items];
+
+    // Filter
+    if (filterText.trim()) {
+      result = result.filter((item) =>
+        item.name.toLowerCase().includes(filterText.toLowerCase()),
+      );
+    }
+
+    // Sort
+    result.sort((a, b) => {
+      const aVal = a[sortConfig.key] ?? "";
+      const bVal = b[sortConfig.key] ?? "";
+      const cmp = String(aVal).localeCompare(String(bVal), undefined, {
+        numeric: true,
+      });
+      return sortConfig.direction === "asc" ? cmp : -cmp;
+    });
+
+    return result;
+  }, [items, filterText, sortConfig]);
+
+  const handleSortChange = (key: SortKey) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
+
   const handleSelectItem = (item: PantryItem) => {
     setSelectedItem(item);
     setFormMode(null);
@@ -83,6 +123,8 @@ function PantryManager() {
     <div>
       <PantryDashboard
         itemCount={items.length}
+        filterText={filterText}
+        onFilterChange={setFilterText}
         onAddClick={() => {
           setSelectedItem(null);
           setFormMode("add");
@@ -92,7 +134,12 @@ function PantryManager() {
       {isLoading && <p>Loading pantry items...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <PantryList items={items} onSelectItem={handleSelectItem} />
+      <PantryList
+        items={displayedItems}
+        sortConfig={sortConfig}
+        onSortChange={handleSortChange}
+        onSelectItem={handleSelectItem}
+      />
 
       {selectedItem && (
         <PantryDetail
@@ -102,9 +149,7 @@ function PantryManager() {
           onDelete={() => handleDeleteItem(selectedItem._id)}
           onClose={() => setSelectedItem(null)}
           onCancel={() => setFormMode(null)}
-          onSubmit={(data) => {
-            handleUpdateItem(data);
-          }}
+          onSubmit={(data) => handleUpdateItem(data)}
         />
       )}
 
@@ -119,7 +164,6 @@ function PantryManager() {
               Fill in the details for the new pantry item.
             </DialogDescription>
           </DialogHeader>
-
           <PantryForm
             selectedItem={null}
             onSubmit={handleAddItem}
