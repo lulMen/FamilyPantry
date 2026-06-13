@@ -1,4 +1,4 @@
-const Pantry = require("../models/pantry.model");
+const Pantry = require("../models/Pantry.model");
 
 const getAllPantryItems = async (req, res) => {
   const items = await Pantry.find({});

@@ -1,0 +1,34 @@
+@baseUrl = http://localhost:3000
+@listId = REPLACE_WITH_REAL_ID
+@recipeId = REPLACE_WITH_REAL_ID
+
+### Get all grocery lists
+GET {{baseUrl}}/api/grocery-lists
+
+### Get grocery list by ID
+GET {{baseUrl}}/api/grocery-lists/{{listId}}
+
+### Create blank grocery list
+POST {{baseUrl}}/api/grocery-lists
+Content-Type: application/json
+
+{
+  "listName": "Weekly Groceries"
+}
+
+### Create grocery list from recipe (cross-reference against pantry)
+POST {{baseUrl}}/api/grocery-lists/from-recipe/{{recipeId}}
+
+### Update grocery list
+PUT {{baseUrl}}/api/grocery-lists/{{listId}}
+Content-Type: application/json
+
+{
+  "listName": "Weekly Groceries (Updated)"
+}
+
+### Delete grocery list (also deletes all its items)
+DELETE {{baseUrl}}/api/grocery-lists/{{listId}}
+
+### Error handling
+DELETE {{baseUrl}}/api/grocery-lists/invalid-id

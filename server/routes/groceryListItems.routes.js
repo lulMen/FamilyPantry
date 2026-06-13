@@ -1,9 +1,12 @@
 const express = require("express");
 const router = express.Router();
-const GroceryListItem = require("../models/GroceryListItem.model");
+const groceryListItemController = require("../controllers/groceryListItem.controller");
 
-router.get("/", async (req, res) => {
-  res.status(200).json({ message: "Grocery List Item endpoint is working!" });
-});
+router.get("/", groceryListItemController.getItemsByListId);
+router.get("/all", groceryListItemController.getAllGroceryListItems);
+router.get("/:id", groceryListItemController.getGroceryListItemById);
+router.post("/", groceryListItemController.createGroceryListItem);
+router.put("/:id", groceryListItemController.updateGroceryListItem);
+router.delete("/:id", groceryListItemController.deleteGroceryListItem);
 
 module.exports = router;

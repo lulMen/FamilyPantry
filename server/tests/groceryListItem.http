@@ -1,0 +1,38 @@
+@baseUrl = http://localhost:3000
+@listId = 6a2cf39df91b4c32fa2d91e4
+@itemId = 6a2cf39df91b4c32fa2d91e6
+
+### Get all items for a list (by listId query param)
+GET {{baseUrl}}/api/grocery-list-items?listId={{listId}}
+
+### Get all items across all lists
+GET {{baseUrl}}/api/grocery-list-items/all
+
+### Get item by ID
+GET {{baseUrl}}/api/grocery-list-items/{{itemId}}
+
+### Create a manual item
+POST {{baseUrl}}/api/grocery-list-items
+Content-Type: application/json
+
+{
+  "listId": "{{listId}}",
+  "itemName": "Eggs",
+  "quantityNeeded": 12,
+  "measurement": "each",
+  "status": "Pending"
+}
+
+### Update item status
+PUT {{baseUrl}}/api/grocery-list-items/{{itemId}}
+Content-Type: application/json
+
+{
+  "status": "In Cart"
+}
+
+### Delete item
+DELETE {{baseUrl}}/api/grocery-list-items/{{itemId}}
+
+### Error handling
+DELETE {{baseUrl}}/api/grocery-list-items/invalid-id
