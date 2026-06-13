@@ -1,8 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import NavBar from "./components/navBar";
+import NavBar from "./components/NavBar";
 import PantryPage from "./pages/pantry.page";
 import RecipePage from "./pages/recipe.page";
-import ShoppingListPage from "./pages/shoppingList.page";
+import ShoppingListPage from "./pages/shopping-list.page";
 
 function App() {
   return (

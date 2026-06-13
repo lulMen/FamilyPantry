@@ -1,4 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import { type Recipe } from "../../../types/recipe.type";
+import { createFromRecipe } from "../../../api/groceryList.api";
 import RecipeForm from "./RecipeForm";
 import {
   Sheet,
@@ -27,6 +29,13 @@ function RecipeDetail({
   onCancel,
   onSubmit,
 }: RecipeDetailProps) {
+  const navigate = useNavigate();
+
+  const handleSendToShoppingList = async () => {
+    await createFromRecipe(recipe._id);
+    navigate("/shopping-lists");
+  };
+
   return (
     <Sheet open={!!recipe} onOpenChange={(open) => !open && onClose()}>
       <SheetContent
@@ -51,7 +60,6 @@ function RecipeDetail({
             </SheetHeader>
 
             <div className="mt-6 space-y-4">
-              {/* Time */}
               <div className="flex justify-between">
                 <span className="font-medium">Prep Time:</span>
                 <span>{recipe.prepTime} min</span>
@@ -61,7 +69,6 @@ function RecipeDetail({
                 <span>{recipe.cookTime} min</span>
               </div>
 
-              {/* Nutrition */}
               <div className="border-t pt-4">
                 <p className="font-medium mb-2">Nutrition (per recipe)</p>
                 <div className="grid grid-cols-2 gap-1 text-sm">
@@ -80,7 +87,6 @@ function RecipeDetail({
                 </div>
               </div>
 
-              {/* Ingredients */}
               <div className="border-t pt-4">
                 <p className="font-medium mb-2">Ingredients</p>
                 <ul className="list-disc list-inside text-sm space-y-1">
@@ -93,7 +99,6 @@ function RecipeDetail({
                 </ul>
               </div>
 
-              {/* Instructions */}
               <div className="border-t pt-4">
                 <p className="font-medium mb-2">Instructions</p>
                 <ol className="list-decimal list-inside text-sm space-y-1">
@@ -103,7 +108,6 @@ function RecipeDetail({
                 </ol>
               </div>
 
-              {/* Notes */}
               {recipe.notes.length > 0 && (
                 <div className="border-t pt-4">
                   <p className="font-medium mb-2">Notes</p>
@@ -115,8 +119,13 @@ function RecipeDetail({
                 </div>
               )}
 
-              {/* Action Buttons */}
-              <div className="flex justify-end space-x-2 border-t pt-4">
+              <div className="flex flex-wrap justify-end gap-2 border-t pt-4">
+                <button
+                  onClick={handleSendToShoppingList}
+                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+                >
+                  Send to Shopping List
+                </button>
                 <button
                   onClick={onEdit}
                   className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
