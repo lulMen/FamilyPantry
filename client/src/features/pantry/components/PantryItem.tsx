@@ -16,12 +16,23 @@ const formatDate = (dateStr: unknown) => {
 };
 
 function PantryItem({ item, onSelect }: PantryItemProps) {
+  const isLowStock = item.trackStock && item.quantity < item.minStockLevel;
+
   return (
     <tr
       onClick={() => onSelect(item)}
       className="border-b hover:bg-gray-50 cursor-pointer"
     >
-      <td className="px-4 py-2">{item.name}</td>
+      <td className="px-4 py-2">
+        <span className="flex items-center gap-2">
+          {item.name}
+          {isLowStock && (
+            <span className="bg-red-100 text-red-700 text-xs font-medium px-2 py-0.5 rounded">
+              Low Stock
+            </span>
+          )}
+        </span>
+      </td>
       <td className="px-4 py-2">{item.quantity}</td>
       <td className="px-4 py-2">{item.measurement}</td>
       <td className="px-4 py-2">{formatDate(item.acquiredDate)}</td>
