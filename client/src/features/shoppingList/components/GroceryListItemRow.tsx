@@ -25,6 +25,16 @@ const STATUS_COLORS: Record<GroceryListItemStatus, string> = {
   "Out of Stock": "bg-red-100 text-red-700",
 };
 
+// Pending: greyed out (not yet acted on)
+// Purchased: strikethrough (done)
+// Out of Stock: italic red with a warning icon (needs attention)
+const getItemNameStyle = (status: GroceryListItemStatus) => {
+  if (status === "Purchased") return "line-through text-gray-400";
+  if (status === "Pending") return "text-gray-400";
+  if (status === "Out of Stock") return "italic text-red-600";
+  return "";
+};
+
 function GroceryListItemRow({
   item,
   onStatusChange,
@@ -93,8 +103,11 @@ function GroceryListItemRow({
 
   return (
     <tr className="border-b hover:bg-gray-50">
-      <td className="px-4 py-2">{item.itemName}</td>
-      <td className="px-4 py-2">
+      <td className={`px-4 py-2 ${getItemNameStyle(item.status)}`}>
+        {item.status === "Out of Stock" && "⚠ "}
+        {item.itemName}
+      </td>
+      <td className={`px-4 py-2 ${getItemNameStyle(item.status)}`}>
         {item.quantityNeeded} {item.measurement ?? ""}
       </td>
       <td className="px-4 py-2">
