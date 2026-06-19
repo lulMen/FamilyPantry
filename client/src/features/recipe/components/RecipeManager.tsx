@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { type Recipe } from "../../../types/recipe.type";
 import {
   getAllRecipes,
@@ -20,12 +20,25 @@ import {
   DialogTitle,
 } from "../../../components/ui/dialog";
 
+type SortKey = "name" | "createdAt";
+type SortDirection = "asc" | "desc";
+
+interface SortConfig {
+  key: SortKey;
+  direction: SortDirection;
+}
+
 function RecipeManager() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [formMode, setFormMode] = useState<"add" | "edit" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [filterText, setFilterText] = useState("");
+  const [sortConfig, setSortConfig] = useState<SortConfig>({
+    key: "name",
+    direction: "asc",
+  });
 
   useEffect(() => {
     const fetchRecipes = async () => {
@@ -43,6 +56,36 @@ function RecipeManager() {
 
     fetchRecipes();
   }, []);
+
+  const displayedRecipes = useMemo(() => {
+    let result = [...recipes];
+
+    if (filterText.trim()) {
+      result = result.filter((recipe) =>
+        recipe.name.toLowerCase().includes(filterText.toLowerCase()),
+      );
+    }
+
+    result.sort((a, b) => {
+      if (sortConfig.key === "name") {
+        const cmp = a.name.localeCompare(b.name, undefined, { numeric: true });
+        return sortConfig.direction === "asc" ? cmp : -cmp;
+      }
+      const aTime = new Date(a.createdAt ?? 0).getTime();
+      const bTime = new Date(b.createdAt ?? 0).getTime();
+      const cmp = aTime - bTime;
+      return sortConfig.direction === "asc" ? cmp : -cmp;
+    });
+
+    return result;
+  }, [recipes, filterText, sortConfig]);
+
+  const handleSortChange = (key: SortKey) => {
+    setSortConfig((prev) => ({
+      key,
+      direction: prev.key === key && prev.direction === "asc" ? "desc" : "asc",
+    }));
+  };
 
   const handleSelectRecipe = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
@@ -77,6 +120,8 @@ function RecipeManager() {
     <div>
       <RecipeDashboard
         recipeCount={recipes.length}
+        filterText={filterText}
+        onFilterChange={setFilterText}
         onAddClick={() => {
           setSelectedRecipe(null);
           setFormMode("add");
@@ -86,7 +131,12 @@ function RecipeManager() {
       {isLoading && <p>Loading recipes...</p>}
       {error && <p style={{ color: "red" }}>{error}</p>}
 
-      <RecipeList recipes={recipes} onSelectRecipe={handleSelectRecipe} />
+      <RecipeList
+        recipes={displayedRecipes}
+        sortConfig={sortConfig}
+        onSortChange={handleSortChange}
+        onSelectRecipe={handleSelectRecipe}
+      />
 
       {selectedRecipe && (
         <RecipeDetail

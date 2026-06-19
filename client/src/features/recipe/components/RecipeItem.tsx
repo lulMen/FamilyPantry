@@ -5,6 +5,16 @@ interface RecipeItemProps {
   onSelect: (recipe: Recipe) => void;
 }
 
+// Helper function to format date for display
+const formatDate = (dateStr: unknown) => {
+  if (!dateStr) return "N/A";
+  return new Date(dateStr as string | Date).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
 function RecipeItem({ recipe, onSelect }: RecipeItemProps) {
   return (
     <tr
@@ -19,6 +29,7 @@ function RecipeItem({ recipe, onSelect }: RecipeItemProps) {
       <td className="px-4 py-2">{recipe.cookTime} min</td>
       <td className="px-4 py-2">{recipe.calories} kcal</td>
       <td className="px-4 py-2">{recipe.ingredients.length}</td>
+      <td className="px-4 py-2">{formatDate(recipe.createdAt)}</td>
     </tr>
   );
 }

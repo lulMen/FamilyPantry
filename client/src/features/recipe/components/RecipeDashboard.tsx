@@ -1,13 +1,27 @@
 interface RecipeDashboardProps {
   recipeCount: number;
+  filterText: string;
+  onFilterChange: (value: string) => void;
   onAddClick: () => void;
 }
 
-function RecipeDashboard({ recipeCount, onAddClick }: RecipeDashboardProps) {
+function RecipeDashboard({
+  recipeCount,
+  filterText,
+  onFilterChange,
+  onAddClick,
+}: RecipeDashboardProps) {
   return (
-    <div className="flex items-center justify-between mb-4">
+    <div className="flex items-center gap-4 mb-4 flex-wrap">
       <h2 className="text-2xl font-bold">Recipe Catalog</h2>
-      <span className="text-gray-600 mr-4">Total Recipes: {recipeCount}</span>
+      <span className="text-gray-600">Total Recipes: {recipeCount}</span>
+      <input
+        type="text"
+        placeholder="Filter by name..."
+        value={filterText}
+        onChange={(e) => onFilterChange(e.target.value)}
+        className="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm text-sm"
+      />
       <button
         onClick={onAddClick}
         className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"

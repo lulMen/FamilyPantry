@@ -45,4 +45,6 @@ export interface Recipe {
   cookTime: number;
   createdBy?: string;
   updatedBy?: string;
+  createdAt?: string;
+  lastUpdated?: string;
 }
