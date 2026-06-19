@@ -31,6 +31,7 @@ export interface GroceryListItem {
   measurement?: RecipeMeasurement;
   type?: GroceryListItemType;
   status: GroceryListItemStatus;
+  locked?: boolean;
   pantryId?: string;
   createdBy?: string;
   updatedBy?: string;

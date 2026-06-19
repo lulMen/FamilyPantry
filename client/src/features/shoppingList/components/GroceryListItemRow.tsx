@@ -113,10 +113,14 @@ function GroceryListItemRow({
       <td className="px-4 py-2">
         <select
           value={item.status}
+          disabled={item.locked}
+          title={item.locked ? "Already purchased — locked" : undefined}
           onChange={(e) =>
             onStatusChange(item._id, e.target.value as GroceryListItemStatus)
           }
-          className={`rounded px-2 py-1 text-sm font-medium border-0 ${STATUS_COLORS[item.status]}`}
+          className={`rounded px-2 py-1 text-sm font-medium border-0 ${STATUS_COLORS[item.status]} ${
+            item.locked ? "opacity-60 cursor-not-allowed" : ""
+          }`}
         >
           {STATUS_OPTIONS.map((s) => (
             <option key={s} value={s}>
@@ -124,17 +128,20 @@ function GroceryListItemRow({
             </option>
           ))}
         </select>
+        {item.locked && <span className="ml-2 text-xs text-gray-400">🔒</span>}
       </td>
       <td className="px-4 py-2 flex gap-3">
         <button
           onClick={() => setIsEditing(true)}
-          className="text-blue-500 hover:text-blue-700 text-sm"
+          disabled={item.locked}
+          className={`text-sm ${item.locked ? "text-gray-300 cursor-not-allowed" : "text-blue-500 hover:text-blue-700"}`}
         >
           Edit
         </button>
         <button
           onClick={() => onDelete(item._id)}
-          className="text-red-500 hover:text-red-700 text-sm"
+          disabled={item.locked}
+          className={`text-sm ${item.locked ? "text-gray-300 cursor-not-allowed" : "text-red-500 hover:text-red-700"}`}
         >
           Delete
         </button>

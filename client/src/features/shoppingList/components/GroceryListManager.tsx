@@ -12,6 +12,7 @@ import {
   createGroceryListItem,
   updateGroceryListItem,
   deleteGroceryListItem,
+  purchaseList,
 } from "../../../api/groceryList.api";
 
 import GroceryListSelector from "./GroceryListSelector";
@@ -23,6 +24,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "../../../components/ui/dialog";
 
 function GroceryListManager() {
@@ -30,9 +32,11 @@ function GroceryListManager() {
   const [selectedList, setSelectedList] = useState<GroceryList | null>(null);
   const [items, setItems] = useState<GroceryListItem[]>([]);
   const [showNewListDialog, setShowNewListDialog] = useState(false);
+  const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
   const [newListName, setNewListName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [purchaseMessage, setPurchaseMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchLists = async () => {
@@ -51,6 +55,8 @@ function GroceryListManager() {
     fetchLists();
   }, []);
 
+  // Self-contained effect — keeps the async function fully inline so the
+  // linter can verify no setState happens synchronously within the effect body.
   useEffect(() => {
     const fetchItems = async () => {
       if (!selectedList) {
@@ -123,6 +129,22 @@ function GroceryListManager() {
     setItems((prev: GroceryListItem[]) => prev.filter((i) => i._id !== _id));
   };
 
+  const purchasedUnlockedCount = items.filter(
+    (i) => i.status === "Purchased" && !i.locked,
+  ).length;
+
+  // Not inside an effect — this is a click handler, so calling setItems
+  // directly here after an await is completely normal and not flagged.
+  const handleConfirmPurchase = async () => {
+    if (!selectedList) return;
+    const result = await purchaseList(selectedList._id);
+    setPurchaseMessage(result.message);
+    setShowPurchaseDialog(false);
+
+    const refreshedItems = await getItemsByListId(selectedList._id);
+    setItems(refreshedItems);
+  };
+
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -131,6 +153,9 @@ function GroceryListManager() {
 
       {isLoading && <p>Loading lists...</p>}
       {error && <p className="text-red-500">{error}</p>}
+      {purchaseMessage && (
+        <p className="text-green-600 mb-2">{purchaseMessage}</p>
+      )}
 
       <GroceryListSelector
         lists={lists}
@@ -141,20 +166,38 @@ function GroceryListManager() {
       />
 
       {selectedList ? (
-        <GroceryListItemTable
-          items={items}
-          listId={selectedList._id}
-          onStatusChange={handleStatusChange}
-          onEdit={handleEditItem}
-          onDelete={handleDeleteItem}
-          onAddItem={handleAddItem}
-        />
+        <>
+          <div className="flex justify-end mb-2">
+            <button
+              onClick={() => setShowPurchaseDialog(true)}
+              disabled={purchasedUnlockedCount === 0}
+              className={`px-4 py-2 rounded text-sm font-medium ${
+                purchasedUnlockedCount === 0
+                  ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                  : "bg-green-600 text-white hover:bg-green-700"
+              }`}
+            >
+              Purchase List
+              {purchasedUnlockedCount > 0 ? ` (${purchasedUnlockedCount})` : ""}
+            </button>
+          </div>
+
+          <GroceryListItemTable
+            items={items}
+            listId={selectedList._id}
+            onStatusChange={handleStatusChange}
+            onEdit={handleEditItem}
+            onDelete={handleDeleteItem}
+            onAddItem={handleAddItem}
+          />
+        </>
       ) : (
         <p className="text-gray-500">
           No lists yet. Create one to get started.
         </p>
       )}
 
+      {/* New List Dialog */}
       <Dialog open={showNewListDialog} onOpenChange={setShowNewListDialog}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
@@ -180,6 +223,34 @@ function GroceryListManager() {
               Create
             </button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Purchase Confirmation Dialog */}
+      <Dialog open={showPurchaseDialog} onOpenChange={setShowPurchaseDialog}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Confirm Purchase</DialogTitle>
+            <DialogDescription>
+              {purchasedUnlockedCount} item(s) marked Purchased will be added to
+              your pantry. Once confirmed, these items can no longer be changed
+              back from Purchased. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="mt-2 flex gap-2">
+            <button
+              onClick={() => setShowPurchaseDialog(false)}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmPurchase}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+            >
+              Confirm Purchase
+            </button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

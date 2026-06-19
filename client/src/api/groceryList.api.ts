@@ -39,6 +39,13 @@ export const createFromRecipe = async (
   return response.data;
 };
 
+export const purchaseList = async (
+  listId: string,
+): Promise<{ message: string; pantryItems: unknown[] }> => {
+  const response = await apiClient.post(`/grocery-lists/${listId}/purchase`);
+  return response.data;
+};
+
 // --- GroceryListItem ---
 
 export const getItemsByListId = async (
