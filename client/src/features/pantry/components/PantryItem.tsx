@@ -3,6 +3,10 @@ import { type PantryItem as PantryItemType } from "../../../types/pantry.type";
 interface PantryItemProps {
   item: PantryItemType;
   onSelect: (item: PantryItemType) => void;
+  // "subrow" is used when this row is rendered inside an expanded
+  // PantryGroupRow — gives it a subtly different background so it reads
+  // as nested under its group header rather than a standalone item.
+  variant?: "default" | "subrow";
 }
 
 // Helper function to format date for display
@@ -21,17 +25,21 @@ const formatCost = (cost: unknown) => {
   return `$${(cost as number).toFixed(2)}`;
 };
 
-function PantryItem({ item, onSelect }: PantryItemProps) {
+function PantryItem({ item, onSelect, variant = "default" }: PantryItemProps) {
   const isLowStock = item.trackStock && item.quantity < item.minStockLevel;
+  const isSubrow = variant === "subrow";
 
   return (
     <tr
       onClick={() => onSelect(item)}
-      className="border-b hover:bg-gray-50 cursor-pointer"
+      className={`border-b hover:bg-gray-50 cursor-pointer ${
+        isSubrow ? "bg-slate-50/70" : ""
+      }`}
     >
       <td className="px-4 py-2">
         <span className="flex items-center gap-2">
-          {item.name}
+          {isSubrow && <span className="text-gray-300 pl-4">↳</span>}
+          <span className={isSubrow ? "text-gray-600" : ""}>{item.name}</span>
           {isLowStock && (
             <span className="bg-red-100 text-red-700 text-xs font-medium px-2 py-0.5 rounded">
               Low Stock

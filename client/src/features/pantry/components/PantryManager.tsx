@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { type PantryItem } from "../../../types/pantry.type";
+import { type PantryItem, type PantryRow } from "../../../types/pantry.type";
 import {
   getAllPantryItems,
   createPantryItem,
@@ -27,6 +27,16 @@ interface SortConfig {
   key: SortKey;
   direction: SortDirection;
 }
+
+// Returns the chronologically earliest of a list of ISO date strings,
+// ignoring any that are missing/empty. Returns undefined if none are valid.
+const getSoonestDate = (dates: (string | undefined)[]): string | undefined => {
+  const valid = dates.filter((d): d is string => Boolean(d));
+  if (valid.length === 0) return undefined;
+  return valid.reduce((soonest, d) =>
+    new Date(d).getTime() < new Date(soonest).getTime() ? d : soonest,
+  );
+};
 
 function PantryManager() {
   const [items, setItems] = useState<PantryItem[]>([]);
@@ -56,28 +66,89 @@ function PantryManager() {
     fetchPantryItems();
   }, []);
 
-  const displayedItems = useMemo(() => {
-    let result = [...items];
+  const filteredItems = useMemo(() => {
+    if (!filterText.trim()) return items;
+    return items.filter((item) =>
+      item.name.toLowerCase().includes(filterText.toLowerCase()),
+    );
+  }, [items, filterText]);
 
-    // Filter
-    if (filterText.trim()) {
-      result = result.filter((item) =>
-        item.name.toLowerCase().includes(filterText.toLowerCase()),
-      );
+  // Groups filtered items by case-insensitive name into PantryRows (single
+  // lots stay as-is; 2+ lots of the same name collapse into a group row),
+  // then sorts the combined row list according to sortConfig.
+  const rows: PantryRow[] = useMemo(() => {
+    const groupMap = new Map<string, PantryItem[]>();
+    for (const item of filteredItems) {
+      const key = item.name.trim().toLowerCase();
+      const existing = groupMap.get(key);
+      if (existing) existing.push(item);
+      else groupMap.set(key, [item]);
     }
 
-    // Sort
-    result.sort((a, b) => {
-      const aVal = a[sortConfig.key] ?? "";
-      const bVal = b[sortConfig.key] ?? "";
+    const builtRows: PantryRow[] = [];
+    for (const groupItems of groupMap.values()) {
+      if (groupItems.length === 1) {
+        builtRows.push({ type: "single", item: groupItems[0] });
+        continue;
+      }
+
+      const totalQuantity = groupItems.reduce((sum, i) => sum + i.quantity, 0);
+      const soonestExpiration = getSoonestDate(
+        groupItems.map((i) => i.expirationDate),
+      );
+      const soonestAcquired = getSoonestDate(
+        groupItems.map((i) => i.acquiredDate),
+      );
+      const isLowStock = groupItems.some(
+        (i) => i.trackStock && totalQuantity < i.minStockLevel,
+      );
+
+      builtRows.push({
+        type: "group",
+        group: {
+          key: groupItems[0].name.trim().toLowerCase(),
+          name: groupItems[0].name,
+          items: groupItems,
+          totalQuantity,
+          measurement: groupItems[0].measurement,
+          soonestExpiration,
+          soonestAcquired,
+          isLowStock,
+        },
+      });
+    }
+
+    const getSortValue = (row: PantryRow): string | number => {
+      if (sortConfig.key === "name") {
+        return row.type === "single" ? row.item.name : row.group.name;
+      }
+      if (sortConfig.key === "quantity") {
+        return row.type === "single"
+          ? row.item.quantity
+          : row.group.totalQuantity;
+      }
+      if (sortConfig.key === "acquiredDate") {
+        return row.type === "single"
+          ? (row.item.acquiredDate ?? "")
+          : (row.group.soonestAcquired ?? "");
+      }
+      // expirationDate
+      return row.type === "single"
+        ? (row.item.expirationDate ?? "")
+        : (row.group.soonestExpiration ?? "");
+    };
+
+    builtRows.sort((a, b) => {
+      const aVal = getSortValue(a);
+      const bVal = getSortValue(b);
       const cmp = String(aVal).localeCompare(String(bVal), undefined, {
         numeric: true,
       });
       return sortConfig.direction === "asc" ? cmp : -cmp;
     });
 
-    return result;
-  }, [items, filterText, sortConfig]);
+    return builtRows;
+  }, [filteredItems, sortConfig]);
 
   const handleSortChange = (key: SortKey) => {
     setSortConfig((prev) => ({
@@ -135,7 +206,7 @@ function PantryManager() {
       {error && <p style={{ color: "red" }}>{error}</p>}
 
       <PantryList
-        items={displayedItems}
+        rows={rows}
         sortConfig={sortConfig}
         onSortChange={handleSortChange}
         onSelectItem={handleSelectItem}

@@ -1,5 +1,10 @@
-import { type PantryItem as PantryItemType } from "../../../types/pantry.type";
+import { useState } from "react";
+import {
+  type PantryItem as PantryItemType,
+  type PantryRow,
+} from "../../../types/pantry.type";
 import PantryItem from "./PantryItem";
+import PantryGroupRow from "./PantryGroupRow";
 
 type SortKey = "name" | "quantity" | "acquiredDate" | "expirationDate";
 type SortDirection = "asc" | "desc";
@@ -10,7 +15,7 @@ interface SortConfig {
 }
 
 interface PantryListProps {
-  items: PantryItemType[];
+  rows: PantryRow[];
   sortConfig: SortConfig;
   onSortChange: (key: SortKey) => void;
   onSelectItem: (item: PantryItemType) => void;
@@ -45,15 +50,28 @@ function SortHeader({
 }
 
 function PantryList({
-  items,
+  rows,
   sortConfig,
   onSortChange,
   onSelectItem,
 }: PantryListProps) {
+  // Expand/collapse is pure UI state — it doesn't affect data, so it lives
+  // here rather than in PantryManager. Keyed by group key (lowercased name).
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+
+  const toggleGroup = (key: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
   return (
     <div className="bg-white shadow rounded p-4">
       <h3 className="text-lg font-semibold mb-3">Pantry Items</h3>
-      {items.length === 0 ? (
+      {rows.length === 0 ? (
         <p className="text-gray-600">No items found.</p>
       ) : (
         <table className="mb-4 w-full text-left text-sm font-light">
@@ -90,9 +108,23 @@ function PantryList({
             </tr>
           </thead>
           <tbody>
-            {items.map((item) => (
-              <PantryItem key={item._id} item={item} onSelect={onSelectItem} />
-            ))}
+            {rows.map((row) =>
+              row.type === "single" ? (
+                <PantryItem
+                  key={row.item._id}
+                  item={row.item}
+                  onSelect={onSelectItem}
+                />
+              ) : (
+                <PantryGroupRow
+                  key={row.group.key}
+                  group={row.group}
+                  isExpanded={expandedGroups.has(row.group.key)}
+                  onToggle={() => toggleGroup(row.group.key)}
+                  onSelectItem={onSelectItem}
+                />
+              ),
+            )}
           </tbody>
         </table>
       )}
