@@ -41,7 +41,6 @@ const createFromRecipe = async (req, res) => {
   const itemsToCreate = [];
 
   for (const ingredient of recipe.ingredients) {
-    // Sum all pantry items matching this ingredient name (case-insensitive)
     const pantryMatches = pantryItems.filter(
       (p) => p.name.toLowerCase() === ingredient.name.toLowerCase(),
     );
@@ -58,18 +57,55 @@ const createFromRecipe = async (req, res) => {
     }
   }
 
-  // Create the list
   const list = await GroceryList.create({
     listName: `${recipe.name} — Shopping List`,
     recipeId: recipe._id,
   });
 
-  // Attach listId to each item and bulk insert
   const items = itemsToCreate.map((item) => ({ ...item, listId: list._id }));
   const createdItems =
     items.length > 0 ? await GroceryListItem.insertMany(items) : [];
 
   res.status(201).json({ list, items: createdItems });
+};
+
+// POST /api/grocery-lists/:id/purchase
+// Converts all "Purchased" + unlocked items on this list into new Pantry entries,
+// then locks those items so their status can no longer be changed.
+const purchaseList = async (req, res) => {
+  const list = await GroceryList.findById(req.params.id).orFail();
+
+  const itemsToConvert = await GroceryListItem.find({
+    listId: list._id,
+    status: "Purchased",
+    locked: { $ne: true },
+  });
+
+  if (itemsToConvert.length === 0) {
+    return res
+      .status(200)
+      .json({ message: "No purchased items to process.", pantryItems: [] });
+  }
+
+  const pantryDocs = itemsToConvert.map((item) => ({
+    name: item.itemName,
+    quantity: item.quantityNeeded,
+    measurement: item.measurement || "each",
+    storageType: item.type || "Dry",
+    acquiredDate: new Date(),
+  }));
+
+  const createdPantryItems = await Pantry.insertMany(pantryDocs);
+
+  await GroceryListItem.updateMany(
+    { _id: { $in: itemsToConvert.map((i) => i._id) } },
+    { $set: { locked: true } },
+  );
+
+  res.status(200).json({
+    message: `${createdPantryItems.length} item(s) added to pantry.`,
+    pantryItems: createdPantryItems,
+  });
 };
 
 module.exports = {
@@ -79,4 +115,5 @@ module.exports = {
   updateGroceryList,
   deleteGroceryList,
   createFromRecipe,
+  purchaseList,
 };

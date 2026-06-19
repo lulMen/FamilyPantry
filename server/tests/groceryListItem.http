@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000
-@listId = 6a2cf39df91b4c32fa2d91e4
+@listId = 6a34717222af5bc2af2ed2b5
 @itemId = 6a2cf39df91b4c32fa2d91e6
 
 ### Get all items for a list (by listId query param)

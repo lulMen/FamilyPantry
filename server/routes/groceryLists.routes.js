@@ -6,6 +6,7 @@ router.get("/", groceryListController.getAllGroceryLists);
 router.get("/:id", groceryListController.getGroceryListById);
 router.post("/", groceryListController.createGroceryList);
 router.post("/from-recipe/:recipeId", groceryListController.createFromRecipe);
+router.post("/:id/purchase", groceryListController.purchaseList);
 router.put("/:id", groceryListController.updateGroceryList);
 router.delete("/:id", groceryListController.deleteGroceryList);
 

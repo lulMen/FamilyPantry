@@ -1,5 +1,5 @@
 @baseUrl = http://localhost:3000
-@listId = REPLACE_WITH_REAL_ID
+@listId = 6a2cf39df91b4c32fa2d91e4
 @recipeId = REPLACE_WITH_REAL_ID
 
 ### Get all grocery lists
@@ -29,6 +29,9 @@ Content-Type: application/json
 
 ### Delete grocery list (also deletes all its items)
 DELETE {{baseUrl}}/api/grocery-lists/{{listId}}
+
+### Purchase list
+POST {{baseUrl}}/api/grocery-lists/{{listId}}/purchase
 
 ### Error handling
 DELETE {{baseUrl}}/api/grocery-lists/invalid-id

@@ -44,6 +44,10 @@ const groceryListItemSchema = new mongoose.Schema(
       enum: ["Pending", "In Cart", "Purchased", "Out of Stock"],
       default: "Pending",
     },
+    locked: {
+      type: Boolean,
+      default: false,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",

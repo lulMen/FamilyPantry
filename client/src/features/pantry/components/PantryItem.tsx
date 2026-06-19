@@ -15,6 +15,12 @@ const formatDate = (dateStr: unknown) => {
   });
 };
 
+// Helper function to safely format cost — cost is optional on the schema
+const formatCost = (cost: unknown) => {
+  if (cost === undefined || cost === null) return "—";
+  return `$${(cost as number).toFixed(2)}`;
+};
+
 function PantryItem({ item, onSelect }: PantryItemProps) {
   const isLowStock = item.trackStock && item.quantity < item.minStockLevel;
 
@@ -39,7 +45,7 @@ function PantryItem({ item, onSelect }: PantryItemProps) {
       <td className="px-4 py-2">{formatDate(item.expirationDate)}</td>
       <td className="px-4 py-2">{item.storageType}</td>
       <td className="px-4 py-2">{item.storageLocation}</td>
-      <td className="px-4 py-2">${item.cost.toFixed(2)}</td>
+      <td className="px-4 py-2">{formatCost(item.cost)}</td>
     </tr>
   );
 }
