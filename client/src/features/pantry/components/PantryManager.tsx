@@ -6,11 +6,14 @@ import {
   updatePantryItem,
   deletePantryItem,
 } from "../../../api/pantry.api";
+import { getErrorMessage } from "../../../utils/errorMessage";
 
 import PantryDashboard from "./PantryDashboard";
 import PantryList from "./PantryList";
 import PantryDetail from "./PantryDetail";
 import PantryForm from "./PantryForm";
+import ErrorBanner from "../../../components/ErrorBanner";
+import LoadingSpinner from "../../../components/LoadingSpinner";
 
 import {
   Dialog,
@@ -43,7 +46,12 @@ function PantryManager() {
   const [selectedItem, setSelectedItem] = useState<PantryItem | null>(null);
   const [formMode, setFormMode] = useState<"add" | "edit" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // loadError: page-level banner, only for the initial fetch (no Dialog/Sheet
+  // is open at that point, so the main page banner is actually visible).
+  const [loadError, setLoadError] = useState<string | null>(null);
+  // actionError: shown inside whichever Dialog/Sheet is currently open for
+  // add/edit/delete — those overlays would hide a page-level banner.
+  const [actionError, setActionError] = useState<string | null>(null);
   const [filterText, setFilterText] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "name",
@@ -56,9 +64,9 @@ function PantryManager() {
       try {
         const data = await getAllPantryItems();
         setItems(data);
-        setError(null);
-      } catch {
-        setError("Failed to fetch pantry items.");
+        setLoadError(null);
+      } catch (err) {
+        setLoadError(getErrorMessage(err, "Failed to load pantry items."));
       } finally {
         setIsLoading(false);
       }
@@ -132,7 +140,6 @@ function PantryManager() {
           ? (row.item.acquiredDate ?? "")
           : (row.group.soonestAcquired ?? "");
       }
-      // expirationDate
       return row.type === "single"
         ? (row.item.expirationDate ?? "")
         : (row.group.soonestExpiration ?? "");
@@ -160,34 +167,52 @@ function PantryManager() {
   const handleSelectItem = (item: PantryItem) => {
     setSelectedItem(item);
     setFormMode(null);
+    setActionError(null);
   };
 
   const handleAddItem = async (
     formData: Omit<PantryItem, "_id" | "createdBy" | "updatedBy">,
   ) => {
-    const newItem = await createPantryItem(formData as Omit<PantryItem, "_id">);
-    setItems((prevItems) => [...prevItems, newItem]);
-    setFormMode(null);
+    try {
+      const newItem = await createPantryItem(
+        formData as Omit<PantryItem, "_id">,
+      );
+      setItems((prevItems) => [...prevItems, newItem]);
+      setFormMode(null);
+      setActionError(null);
+    } catch (err) {
+      setActionError(getErrorMessage(err, "Failed to create pantry item."));
+    }
   };
 
   const handleUpdateItem = async (
     formData: Partial<Omit<PantryItem, "_id">>,
   ) => {
     if (!selectedItem) return;
-    const updatedItem = await updatePantryItem(selectedItem._id, formData);
-    setItems((prevItems) =>
-      prevItems.map((item) =>
-        item._id === updatedItem._id ? updatedItem : item,
-      ),
-    );
-    setSelectedItem(updatedItem);
-    setFormMode(null);
+    try {
+      const updatedItem = await updatePantryItem(selectedItem._id, formData);
+      setItems((prevItems) =>
+        prevItems.map((item) =>
+          item._id === updatedItem._id ? updatedItem : item,
+        ),
+      );
+      setSelectedItem(updatedItem);
+      setFormMode(null);
+      setActionError(null);
+    } catch (err) {
+      setActionError(getErrorMessage(err, "Failed to update pantry item."));
+    }
   };
 
   const handleDeleteItem = async (_id: string) => {
-    await deletePantryItem(_id);
-    setItems((prevItems) => prevItems.filter((item) => item._id !== _id));
-    setSelectedItem(null);
+    try {
+      await deletePantryItem(_id);
+      setItems((prevItems) => prevItems.filter((item) => item._id !== _id));
+      setSelectedItem(null);
+      setActionError(null);
+    } catch (err) {
+      setActionError(getErrorMessage(err, "Failed to delete pantry item."));
+    }
   };
 
   return (
@@ -198,12 +223,15 @@ function PantryManager() {
         onFilterChange={setFilterText}
         onAddClick={() => {
           setSelectedItem(null);
+          setActionError(null);
           setFormMode("add");
         }}
       />
 
-      {isLoading && <p>Loading pantry items...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {loadError && (
+        <ErrorBanner message={loadError} onDismiss={() => setLoadError(null)} />
+      )}
+      {isLoading && <LoadingSpinner label="Loading pantry items..." />}
 
       <PantryList
         rows={rows}
@@ -216,11 +244,16 @@ function PantryManager() {
         <PantryDetail
           item={selectedItem}
           formMode={formMode === "add" ? null : formMode}
-          onEdit={() => setFormMode("edit")}
+          onEdit={() => {
+            setActionError(null);
+            setFormMode("edit");
+          }}
           onDelete={() => handleDeleteItem(selectedItem._id)}
           onClose={() => setSelectedItem(null)}
           onCancel={() => setFormMode(null)}
           onSubmit={(data) => handleUpdateItem(data)}
+          error={actionError}
+          onDismissError={() => setActionError(null)}
         />
       )}
 
@@ -239,6 +272,7 @@ function PantryManager() {
             selectedItem={null}
             onSubmit={handleAddItem}
             onCancel={() => setFormMode(null)}
+            error={actionError}
           />
         </DialogContent>
       </Dialog>

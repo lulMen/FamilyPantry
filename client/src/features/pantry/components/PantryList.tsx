@@ -5,6 +5,7 @@ import {
 } from "../../../types/pantry.type";
 import PantryItem from "./PantryItem";
 import PantryGroupRow from "./PantryGroupRow";
+import EmptyState from "../../../components/EmptyState";
 
 type SortKey = "name" | "quantity" | "acquiredDate" | "expirationDate";
 type SortDirection = "asc" | "desc";
@@ -72,7 +73,7 @@ function PantryList({
     <div className="bg-white shadow rounded p-4">
       <h3 className="text-lg font-semibold mb-3">Pantry Items</h3>
       {rows.length === 0 ? (
-        <p className="text-gray-600">No items found.</p>
+        <EmptyState message="No items found." />
       ) : (
         <table className="mb-4 w-full text-left text-sm font-light">
           <thead className="border-b font-medium dark:border-neutral-500">

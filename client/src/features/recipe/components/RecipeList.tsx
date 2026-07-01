@@ -1,5 +1,6 @@
 import { type Recipe } from "../../../types/recipe.type";
 import RecipeItem from "./RecipeItem";
+import EmptyState from "../../../components/EmptyState";
 
 type SortKey = "name" | "createdAt";
 type SortDirection = "asc" | "desc";
@@ -54,7 +55,7 @@ function RecipeList({
     <div className="bg-white shadow rounded p-4">
       <h3 className="text-lg font-semibold mb-3">Recipes</h3>
       {recipes.length === 0 ? (
-        <p className="text-gray-600">No recipes found.</p>
+        <EmptyState message="No recipes found." />
       ) : (
         <table className="mb-4 w-full text-left text-sm font-light">
           <thead className="border-b font-medium dark:border-neutral-500">

@@ -14,9 +14,13 @@ import {
   deleteGroceryListItem,
   purchaseList,
 } from "../../../api/groceryList.api";
+import { getErrorMessage } from "../../../utils/errorMessage";
 
 import GroceryListSelector from "./GroceryListSelector";
 import GroceryListItemTable from "./GroceryListItemTable";
+import ErrorBanner from "../../../components/ErrorBanner";
+import LoadingSpinner from "../../../components/LoadingSpinner";
+import EmptyState from "../../../components/EmptyState";
 
 import {
   Dialog,
@@ -35,8 +39,21 @@ function GroceryListManager() {
   const [showPurchaseDialog, setShowPurchaseDialog] = useState(false);
   const [newListName, setNewListName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [purchaseMessage, setPurchaseMessage] = useState<string | null>(null);
+
+  // Page-level error — for the initial fetch and for actions triggered
+  // directly from the main page (delete list/item, status toggle, inline
+  // edit, inline add). None of those are blocked by a Dialog overlay, so
+  // a banner here is actually visible.
+  const [error, setError] = useState<string | null>(null);
+
+  // Errors scoped to each Dialog — a Dialog's full-screen overlay hides the
+  // page-level banner behind it, so failures from an action triggered
+  // *inside* a Dialog need to render inside that same Dialog.
+  const [newListError, setNewListError] = useState<string | null>(null);
+  const [purchaseError, setPurchaseError] = useState<string | null>(null);
+  const [isCreatingList, setIsCreatingList] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false);
 
   useEffect(() => {
     const fetchLists = async () => {
@@ -46,8 +63,8 @@ function GroceryListManager() {
         setLists(data);
         if (data.length > 0) setSelectedList(data[0]);
         setError(null);
-      } catch {
-        setError("Failed to fetch shopping lists.");
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to load shopping lists."));
       } finally {
         setIsLoading(false);
       }
@@ -66,8 +83,9 @@ function GroceryListManager() {
       try {
         const data = await getItemsByListId(selectedList._id);
         setItems(data);
-      } catch {
-        setError("Failed to fetch list items.");
+        setError(null);
+      } catch (err) {
+        setError(getErrorMessage(err, "Failed to load list items."));
       }
     };
     fetchItems();
@@ -78,24 +96,43 @@ function GroceryListManager() {
   };
 
   const handleCreateList = async () => {
-    if (!newListName.trim()) return;
-    const list = await createGroceryList(newListName.trim());
-    setLists((prev: GroceryList[]) => [...prev, list]);
-    setSelectedList(list);
-    setNewListName("");
-    setShowNewListDialog(false);
+    if (!newListName.trim()) {
+      setNewListError("List name is required.");
+      return;
+    }
+    setIsCreatingList(true);
+    try {
+      const list = await createGroceryList(newListName.trim());
+      setLists((prev: GroceryList[]) => [...prev, list]);
+      setSelectedList(list);
+      setNewListName("");
+      setShowNewListDialog(false);
+      setNewListError(null);
+    } catch (err) {
+      setNewListError(getErrorMessage(err, "Failed to create shopping list."));
+    } finally {
+      setIsCreatingList(false);
+    }
   };
 
   const handleDeleteList = async (list: GroceryList) => {
-    await deleteGroceryList(list._id);
-    setLists((prev: GroceryList[]) => prev.filter((l) => l._id !== list._id));
-    if (selectedList?._id === list._id) {
-      const remaining = lists.filter((l) => l._id !== list._id);
-      setSelectedList(remaining.length > 0 ? remaining[0] : null);
+    try {
+      await deleteGroceryList(list._id);
+      setLists((prev: GroceryList[]) => prev.filter((l) => l._id !== list._id));
+      if (selectedList?._id === list._id) {
+        const remaining = lists.filter((l) => l._id !== list._id);
+        setSelectedList(remaining.length > 0 ? remaining[0] : null);
+      }
+      setError(null);
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to delete shopping list."));
     }
   };
 
   const handleAddItem = async (item: Omit<GroceryListItem, "_id">) => {
+    // No try/catch here — GroceryListItemTable already wraps this call in
+    // its own try/catch to manage local loading/error state for the inline
+    // add form, so the error needs to propagate up to it, not get caught here.
     const newItem = await createGroceryListItem(item);
     setItems((prev: GroceryListItem[]) => [...prev, newItem]);
   };
@@ -105,6 +142,9 @@ function GroceryListManager() {
     itemName: string,
     quantityNeeded: number,
   ) => {
+    // No try/catch here — GroceryListItemRow already wraps this call in its
+    // own try/catch to manage local isSaving/editError state for the inline
+    // edit row, so the error needs to propagate up to it, not get caught here.
     const updated = await updateGroceryListItem(_id, {
       itemName,
       quantityNeeded,
@@ -118,15 +158,25 @@ function GroceryListManager() {
     _id: string,
     status: GroceryListItemStatus,
   ) => {
-    const updated = await updateGroceryListItem(_id, { status });
-    setItems((prev: GroceryListItem[]) =>
-      prev.map((i) => (i._id === _id ? updated : i)),
-    );
+    try {
+      const updated = await updateGroceryListItem(_id, { status });
+      setItems((prev: GroceryListItem[]) =>
+        prev.map((i) => (i._id === _id ? updated : i)),
+      );
+      setError(null);
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to update item status."));
+    }
   };
 
   const handleDeleteItem = async (_id: string) => {
-    await deleteGroceryListItem(_id);
-    setItems((prev: GroceryListItem[]) => prev.filter((i) => i._id !== _id));
+    try {
+      await deleteGroceryListItem(_id);
+      setItems((prev: GroceryListItem[]) => prev.filter((i) => i._id !== _id));
+      setError(null);
+    } catch (err) {
+      setError(getErrorMessage(err, "Failed to delete item."));
+    }
   };
 
   const purchasedUnlockedCount = items.filter(
@@ -137,12 +187,23 @@ function GroceryListManager() {
   // directly here after an await is completely normal and not flagged.
   const handleConfirmPurchase = async () => {
     if (!selectedList) return;
-    const result = await purchaseList(selectedList._id);
-    setPurchaseMessage(result.message);
-    setShowPurchaseDialog(false);
+    setIsPurchasing(true);
+    try {
+      const result = await purchaseList(selectedList._id);
+      setPurchaseMessage(result.message);
+      setShowPurchaseDialog(false);
+      setPurchaseError(null);
 
-    const refreshedItems = await getItemsByListId(selectedList._id);
-    setItems(refreshedItems);
+      const refreshedItems = await getItemsByListId(selectedList._id);
+      setItems(refreshedItems);
+    } catch (err) {
+      // Keep the dialog open on failure so the error is visible where the
+      // action was triggered, instead of closing it and hiding the error
+      // behind the page banner the overlay was covering.
+      setPurchaseError(getErrorMessage(err, "Failed to process purchase."));
+    } finally {
+      setIsPurchasing(false);
+    }
   };
 
   return (
@@ -151,17 +212,22 @@ function GroceryListManager() {
         <h2 className="text-2xl font-bold">Shopping Lists</h2>
       </div>
 
-      {isLoading && <p>Loading lists...</p>}
-      {error && <p className="text-red-500">{error}</p>}
+      {error && (
+        <ErrorBanner message={error} onDismiss={() => setError(null)} />
+      )}
+      {isLoading && <LoadingSpinner label="Loading lists..." />}
       {purchaseMessage && (
-        <p className="text-green-600 mb-2">{purchaseMessage}</p>
+        <p className="text-green-600 mb-2 text-sm">{purchaseMessage}</p>
       )}
 
       <GroceryListSelector
         lists={lists}
         selectedList={selectedList}
         onSelect={handleSelectList}
-        onNewList={() => setShowNewListDialog(true)}
+        onNewList={() => {
+          setNewListError(null);
+          setShowNewListDialog(true);
+        }}
         onDeleteList={handleDeleteList}
       />
 
@@ -169,7 +235,10 @@ function GroceryListManager() {
         <>
           <div className="flex justify-end mb-2">
             <button
-              onClick={() => setShowPurchaseDialog(true)}
+              onClick={() => {
+                setPurchaseError(null);
+                setShowPurchaseDialog(true);
+              }}
               disabled={purchasedUnlockedCount === 0}
               className={`px-4 py-2 rounded text-sm font-medium ${
                 purchasedUnlockedCount === 0
@@ -192,13 +261,17 @@ function GroceryListManager() {
           />
         </>
       ) : (
-        <p className="text-gray-500">
-          No lists yet. Create one to get started.
-        </p>
+        <EmptyState message="No lists yet. Create one to get started." />
       )}
 
       {/* New List Dialog */}
-      <Dialog open={showNewListDialog} onOpenChange={setShowNewListDialog}>
+      <Dialog
+        open={showNewListDialog}
+        onOpenChange={(open) => {
+          setShowNewListDialog(open);
+          if (!open) setNewListError(null);
+        }}
+      >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>New Shopping List</DialogTitle>
@@ -206,6 +279,12 @@ function GroceryListManager() {
               Enter a name for your new list.
             </DialogDescription>
           </DialogHeader>
+          {newListError && (
+            <ErrorBanner
+              message={newListError}
+              onDismiss={() => setNewListError(null)}
+            />
+          )}
           <div className="flex gap-2 mt-2">
             <input
               type="text"
@@ -215,19 +294,27 @@ function GroceryListManager() {
               onKeyDown={(e) => e.key === "Enter" && handleCreateList()}
               className="flex-1 rounded-md border-gray-300 shadow-sm text-sm"
               autoFocus
+              disabled={isCreatingList}
             />
             <button
               onClick={handleCreateList}
-              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+              disabled={isCreatingList}
+              className="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 text-sm disabled:opacity-60"
             >
-              Create
+              {isCreatingList ? "Creating..." : "Create"}
             </button>
           </div>
         </DialogContent>
       </Dialog>
 
       {/* Purchase Confirmation Dialog */}
-      <Dialog open={showPurchaseDialog} onOpenChange={setShowPurchaseDialog}>
+      <Dialog
+        open={showPurchaseDialog}
+        onOpenChange={(open) => {
+          setShowPurchaseDialog(open);
+          if (!open) setPurchaseError(null);
+        }}
+      >
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Confirm Purchase</DialogTitle>
@@ -237,18 +324,26 @@ function GroceryListManager() {
               back from Purchased. This cannot be undone.
             </DialogDescription>
           </DialogHeader>
+          {purchaseError && (
+            <ErrorBanner
+              message={purchaseError}
+              onDismiss={() => setPurchaseError(null)}
+            />
+          )}
           <DialogFooter className="mt-2 flex gap-2">
             <button
               onClick={() => setShowPurchaseDialog(false)}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm"
+              disabled={isPurchasing}
+              className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm disabled:opacity-60"
             >
               Cancel
             </button>
             <button
               onClick={handleConfirmPurchase}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm"
+              disabled={isPurchasing}
+              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 text-sm disabled:opacity-60"
             >
-              Confirm Purchase
+              {isPurchasing ? "Processing..." : "Confirm Purchase"}
             </button>
           </DialogFooter>
         </DialogContent>

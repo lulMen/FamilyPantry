@@ -6,11 +6,14 @@ import {
   updateRecipe,
   deleteRecipe,
 } from "../../../api/recipe.api";
+import { getErrorMessage } from "../../../utils/errorMessage";
 
 import RecipeDashboard from "./RecipeDashboard";
 import RecipeList from "./RecipeList";
 import RecipeDetail from "./RecipeDetail";
 import RecipeForm from "./RecipeForm";
+import ErrorBanner from "../../../components/ErrorBanner";
+import LoadingSpinner from "../../../components/LoadingSpinner";
 
 import {
   Dialog,
@@ -33,7 +36,10 @@ function RecipeManager() {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [formMode, setFormMode] = useState<"add" | "edit" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // loadError: page-level banner, only for the initial fetch.
+  const [loadError, setLoadError] = useState<string | null>(null);
+  // actionError: shown inside whichever Dialog/Sheet is currently open.
+  const [actionError, setActionError] = useState<string | null>(null);
   const [filterText, setFilterText] = useState("");
   const [sortConfig, setSortConfig] = useState<SortConfig>({
     key: "name",
@@ -46,9 +52,9 @@ function RecipeManager() {
       try {
         const data = await getAllRecipes();
         setRecipes(data);
-        setError(null);
-      } catch {
-        setError("Failed to fetch recipes.");
+        setLoadError(null);
+      } catch (err) {
+        setLoadError(getErrorMessage(err, "Failed to load recipes."));
       } finally {
         setIsLoading(false);
       }
@@ -90,30 +96,46 @@ function RecipeManager() {
   const handleSelectRecipe = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
     setFormMode(null);
+    setActionError(null);
   };
 
   const handleAddRecipe = async (
     formData: Omit<Recipe, "_id" | "createdBy" | "updatedBy">,
   ) => {
-    const newRecipe = await createRecipe(formData as Omit<Recipe, "_id">);
-    setRecipes((prev) => [...prev, newRecipe]);
-    setFormMode(null);
+    try {
+      const newRecipe = await createRecipe(formData as Omit<Recipe, "_id">);
+      setRecipes((prev) => [...prev, newRecipe]);
+      setFormMode(null);
+      setActionError(null);
+    } catch (err) {
+      setActionError(getErrorMessage(err, "Failed to create recipe."));
+    }
   };
 
   const handleUpdateRecipe = async (formData: Partial<Omit<Recipe, "_id">>) => {
     if (!selectedRecipe) return;
-    const updatedRecipe = await updateRecipe(selectedRecipe._id, formData);
-    setRecipes((prev) =>
-      prev.map((r) => (r._id === updatedRecipe._id ? updatedRecipe : r)),
-    );
-    setSelectedRecipe(updatedRecipe);
-    setFormMode(null);
+    try {
+      const updatedRecipe = await updateRecipe(selectedRecipe._id, formData);
+      setRecipes((prev) =>
+        prev.map((r) => (r._id === updatedRecipe._id ? updatedRecipe : r)),
+      );
+      setSelectedRecipe(updatedRecipe);
+      setFormMode(null);
+      setActionError(null);
+    } catch (err) {
+      setActionError(getErrorMessage(err, "Failed to update recipe."));
+    }
   };
 
   const handleDeleteRecipe = async (_id: string) => {
-    await deleteRecipe(_id);
-    setRecipes((prev) => prev.filter((r) => r._id !== _id));
-    setSelectedRecipe(null);
+    try {
+      await deleteRecipe(_id);
+      setRecipes((prev) => prev.filter((r) => r._id !== _id));
+      setSelectedRecipe(null);
+      setActionError(null);
+    } catch (err) {
+      setActionError(getErrorMessage(err, "Failed to delete recipe."));
+    }
   };
 
   return (
@@ -124,12 +146,15 @@ function RecipeManager() {
         onFilterChange={setFilterText}
         onAddClick={() => {
           setSelectedRecipe(null);
+          setActionError(null);
           setFormMode("add");
         }}
       />
 
-      {isLoading && <p>Loading recipes...</p>}
-      {error && <p style={{ color: "red" }}>{error}</p>}
+      {loadError && (
+        <ErrorBanner message={loadError} onDismiss={() => setLoadError(null)} />
+      )}
+      {isLoading && <LoadingSpinner label="Loading recipes..." />}
 
       <RecipeList
         recipes={displayedRecipes}
@@ -142,11 +167,16 @@ function RecipeManager() {
         <RecipeDetail
           recipe={selectedRecipe}
           formMode={formMode === "add" ? null : formMode}
-          onEdit={() => setFormMode("edit")}
+          onEdit={() => {
+            setActionError(null);
+            setFormMode("edit");
+          }}
           onDelete={() => handleDeleteRecipe(selectedRecipe._id)}
           onClose={() => setSelectedRecipe(null)}
           onCancel={() => setFormMode(null)}
           onSubmit={(data) => handleUpdateRecipe(data)}
+          error={actionError}
+          onDismissError={() => setActionError(null)}
         />
       )}
 
@@ -166,6 +196,7 @@ function RecipeManager() {
             selectedRecipe={null}
             onSubmit={handleAddRecipe}
             onCancel={() => setFormMode(null)}
+            error={actionError}
           />
         </DialogContent>
       </Dialog>

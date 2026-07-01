@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { type PantryItem as PantryItemType } from "../../../types/pantry.type";
 import PantryForm from "./PantryForm";
+import ErrorBanner from "../../../components/ErrorBanner";
 import {
   Sheet,
   SheetContent,
@@ -12,12 +14,17 @@ interface PantryDetailProps {
   item: PantryItemType;
   formMode: "edit" | null;
   onEdit: () => void;
-  onDelete: () => void;
+  onDelete: () => Promise<void>;
   onClose: () => void;
   onCancel: () => void;
   onSubmit: (
     data: Omit<PantryItemType, "_id" | "createdBy" | "updatedBy">,
-  ) => void;
+  ) => Promise<void>;
+  // Contextual error for whatever action was just attempted from within
+  // this Sheet (edit submit or delete) — the Sheet's full-screen overlay
+  // would otherwise hide a page-level banner, so it has to live in here.
+  error?: string | null;
+  onDismissError?: () => void;
 }
 
 function PantryDetail({
@@ -28,19 +35,36 @@ function PantryDetail({
   onClose,
   onCancel,
   onSubmit,
+  error,
+  onDismissError,
 }: PantryDetailProps) {
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete();
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <Sheet open={!!item} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="w-full sm:w-96">
+      <SheetContent side="right" className="w-full sm:w-96 overflow-y-auto">
         {formMode === "edit" ? (
           <PantryForm
-            mode={formMode}
             selectedItem={item}
             onCancel={onCancel}
             onSubmit={onSubmit}
+            error={error}
           />
         ) : (
           <div>
+            {error && (
+              <ErrorBanner message={error} onDismiss={onDismissError} />
+            )}
+
             <SheetHeader>
               <SheetTitle className="text-lg font-semibold">
                 {item.name || "Pantry Item"}
@@ -107,15 +131,17 @@ function PantryDetail({
               <div className="flex justify-end space-x-2">
                 <button
                   onClick={onEdit}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                  disabled={isDeleting}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-60"
                 >
                   Edit
                 </button>
                 <button
-                  onClick={onDelete}
-                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 disabled:opacity-60"
                 >
-                  Delete
+                  {isDeleting ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </div>

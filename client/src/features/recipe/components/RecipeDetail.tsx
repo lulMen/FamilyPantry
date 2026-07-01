@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { type Recipe } from "../../../types/recipe.type";
 import { createFromRecipe } from "../../../api/groceryList.api";
+import { getErrorMessage } from "../../../utils/errorMessage";
 import RecipeForm from "./RecipeForm";
+import ErrorBanner from "../../../components/ErrorBanner";
 import {
   Sheet,
   SheetContent,
@@ -14,10 +17,16 @@ interface RecipeDetailProps {
   recipe: Recipe;
   formMode: "edit" | null;
   onEdit: () => void;
-  onDelete: () => void;
+  onDelete: () => Promise<void>;
   onClose: () => void;
   onCancel: () => void;
-  onSubmit: (data: Omit<Recipe, "_id" | "createdBy" | "updatedBy">) => void;
+  onSubmit: (
+    data: Omit<Recipe, "_id" | "createdBy" | "updatedBy">,
+  ) => Promise<void>;
+  // Contextual error for the most recent edit/delete attempt — shown inside
+  // this Sheet since its full-screen overlay would hide a page-level banner.
+  error?: string | null;
+  onDismissError?: () => void;
 }
 
 function RecipeDetail({
@@ -28,12 +37,38 @@ function RecipeDetail({
   onClose,
   onCancel,
   onSubmit,
+  error,
+  onDismissError,
 }: RecipeDetailProps) {
   const navigate = useNavigate();
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleSendToShoppingList = async () => {
-    await createFromRecipe(recipe._id);
-    navigate("/shopping-lists");
+    setIsSending(true);
+    try {
+      await createFromRecipe(recipe._id);
+      navigate("/shopping-lists");
+    } catch (err) {
+      setSendError(
+        getErrorMessage(
+          err,
+          "Failed to generate a shopping list from this recipe.",
+        ),
+      );
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await onDelete();
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -47,9 +82,20 @@ function RecipeDetail({
             selectedRecipe={recipe}
             onSubmit={onSubmit}
             onCancel={onCancel}
+            error={error}
           />
         ) : (
           <div>
+            {(error || sendError) && (
+              <ErrorBanner
+                message={error ?? sendError ?? ""}
+                onDismiss={() => {
+                  onDismissError?.();
+                  setSendError(null);
+                }}
+              />
+            )}
+
             <SheetHeader>
               <SheetTitle className="text-lg font-semibold">
                 {recipe.name}
@@ -122,21 +168,24 @@ function RecipeDetail({
               <div className="flex flex-wrap justify-end gap-2 border-t pt-4">
                 <button
                   onClick={handleSendToShoppingList}
-                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600"
+                  disabled={isSending || isDeleting}
+                  className="bg-green-500 text-white px-4 py-2 rounded-md hover:bg-green-600 disabled:opacity-60"
                 >
-                  Send to Shopping List
+                  {isSending ? "Generating..." : "Send to Shopping List"}
                 </button>
                 <button
                   onClick={onEdit}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+                  disabled={isDeleting}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-60"
                 >
                   Edit
                 </button>
                 <button
-                  onClick={onDelete}
-                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                  onClick={handleDelete}
+                  disabled={isDeleting}
+                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600 disabled:opacity-60"
                 >
-                  Delete
+                  {isDeleting ? "Deleting..." : "Delete"}
                 </button>
               </div>
             </div>

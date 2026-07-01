@@ -1,10 +1,17 @@
 import { type PantryItem } from "../../../types/pantry.type";
 import { useState } from "react";
+import ErrorBanner from "../../../components/ErrorBanner";
+import FieldError from "../../../components/FieldError";
 
 interface PantryFormProps {
   selectedItem: PantryItem | null;
-  onSubmit: (data: Omit<PantryItem, "_id" | "createdBy" | "updatedBy">) => void;
+  onSubmit: (
+    data: Omit<PantryItem, "_id" | "createdBy" | "updatedBy">,
+  ) => Promise<void>;
   onCancel: () => void;
+  // Server-side error from the most recent submit attempt — shown at the
+  // top of the form, contextual to whichever Dialog/Sheet this renders in.
+  error?: string | null;
 }
 
 // Helper function to format date for input fields
@@ -28,7 +35,12 @@ const defaultValues: Omit<PantryItem, "_id" | "createdBy" | "updatedBy"> = {
   cost: 0,
 };
 
-function PantryForm({ selectedItem, onSubmit, onCancel }: PantryFormProps) {
+function PantryForm({
+  selectedItem,
+  onSubmit,
+  onCancel,
+  error,
+}: PantryFormProps) {
   // Initialize form data based on whether we're editing an existing item or adding a new one
   const initialValues: Omit<PantryItem, "_id" | "createdBy" | "updatedBy"> =
     selectedItem
@@ -44,6 +56,14 @@ function PantryForm({ selectedItem, onSubmit, onCancel }: PantryFormProps) {
     useState<Omit<PantryItem, "_id" | "createdBy" | "updatedBy">>(
       initialValues,
     );
+
+  // "name" is the only freeform field that's actually required on the schema
+  // without a default value — everything else required is a <select> with a
+  // pre-filled default, so it can never be submitted blank.
+  const [nameTouched, setNameTouched] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const nameError =
+    nameTouched && !formData.name.trim() ? "Name is required." : null;
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>,
@@ -62,29 +82,43 @@ function PantryForm({ selectedItem, onSubmit, onCancel }: PantryFormProps) {
     }));
   };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setNameTouched(true);
+    if (!formData.name.trim()) return;
+    setIsSubmitting(true);
+    try {
+      await onSubmit(formData);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
-    <form
-      className="space-y-4"
-      onSubmit={(e) => {
-        e.preventDefault();
-        onSubmit(formData);
-      }}
-    >
+    <form className="space-y-4" onSubmit={handleSubmit}>
+      {error && <ErrorBanner message={error} />}
+
       <div>
         {/* Name */}
         <label
           htmlFor="name"
           className="block text-sm font-medium text-gray-700"
         >
-          Name
+          Name <span className="text-red-500">*</span>
         </label>
         <input
           type="text"
           id="name"
           value={formData.name}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          onBlur={() => setNameTouched(true)}
+          className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 sm:text-sm ${
+            nameError
+              ? "border-red-500 focus:border-red-500"
+              : "border-gray-300 focus:border-blue-500"
+          }`}
         />
+        <FieldError message={nameError} />
 
         {/* Quantity */}
         <label
@@ -239,15 +273,17 @@ function PantryForm({ selectedItem, onSubmit, onCancel }: PantryFormProps) {
         <button
           type="button"
           onClick={onCancel}
-          className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600"
+          disabled={isSubmitting}
+          className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 disabled:opacity-60"
         >
           Cancel
         </button>
         <button
           type="submit"
-          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600"
+          disabled={isSubmitting}
+          className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:opacity-60"
         >
-          Save
+          {isSubmitting ? "Saving..." : "Save"}
         </button>
       </div>
     </form>

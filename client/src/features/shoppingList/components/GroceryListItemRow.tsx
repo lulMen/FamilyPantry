@@ -3,11 +3,16 @@ import {
   type GroceryListItem,
   type GroceryListItemStatus,
 } from "../../../types/groceryList.type";
+import { getErrorMessage } from "../../../utils/errorMessage";
 
 interface GroceryListItemRowProps {
   item: GroceryListItem;
   onStatusChange: (_id: string, status: GroceryListItemStatus) => void;
-  onEdit: (_id: string, itemName: string, quantityNeeded: number) => void;
+  onEdit: (
+    _id: string,
+    itemName: string,
+    quantityNeeded: number,
+  ) => Promise<void>;
   onDelete: (_id: string) => void;
 }
 
@@ -44,16 +49,33 @@ function GroceryListItemRow({
   const [isEditing, setIsEditing] = useState(false);
   const [itemName, setItemName] = useState(item.itemName);
   const [quantityNeeded, setQuantityNeeded] = useState(item.quantityNeeded);
+  const [nameTouched, setNameTouched] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
 
-  const handleSave = () => {
+  const isNameInvalid = nameTouched && !itemName.trim();
+
+  const handleSave = async () => {
+    setNameTouched(true);
     if (!itemName.trim()) return;
-    onEdit(item._id, itemName, quantityNeeded);
-    setIsEditing(false);
+
+    setEditError(null);
+    setIsSaving(true);
+    try {
+      await onEdit(item._id, itemName, quantityNeeded);
+      setIsEditing(false);
+    } catch (err) {
+      setEditError(getErrorMessage(err, "Failed to update item."));
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleCancel = () => {
     setItemName(item.itemName);
     setQuantityNeeded(item.quantityNeeded);
+    setNameTouched(false);
+    setEditError(null);
     setIsEditing(false);
   };
 
@@ -65,9 +87,18 @@ function GroceryListItemRow({
             type="text"
             value={itemName}
             onChange={(e) => setItemName(e.target.value)}
-            className="w-full rounded border-gray-300 shadow-sm text-sm"
+            onBlur={() => setNameTouched(true)}
+            className={`w-full rounded shadow-sm text-sm ${
+              isNameInvalid ? "border-red-400" : "border-gray-300"
+            }`}
             autoFocus
           />
+          {isNameInvalid && (
+            <p className="text-red-600 text-xs mt-1">Item name is required.</p>
+          )}
+          {editError && (
+            <p className="text-red-600 text-xs mt-1">{editError}</p>
+          )}
         </td>
         <td className="px-4 py-2">
           <input
@@ -86,12 +117,14 @@ function GroceryListItemRow({
         <td className="px-4 py-2 flex gap-2">
           <button
             onClick={handleSave}
-            className="text-green-600 hover:text-green-800 text-sm font-medium"
+            disabled={isSaving}
+            className="text-green-600 hover:text-green-800 text-sm font-medium disabled:opacity-60"
           >
-            Save
+            {isSaving ? "Saving..." : "Save"}
           </button>
           <button
             onClick={handleCancel}
+            disabled={isSaving}
             className="text-gray-500 hover:text-gray-700 text-sm"
           >
             Cancel
