@@ -88,7 +88,7 @@ function GroceryListItemRow({
             value={itemName}
             onChange={(e) => setItemName(e.target.value)}
             onBlur={() => setNameTouched(true)}
-            className={`w-full rounded shadow-sm text-sm ${
+            className={`w-full rounded shadow-sm px-3 py-1.5 text-sm ${
               isNameInvalid ? "border-red-400" : "border-gray-300"
             }`}
             autoFocus
@@ -105,7 +105,7 @@ function GroceryListItemRow({
             type="number"
             value={quantityNeeded}
             onChange={(e) => setQuantityNeeded(Number(e.target.value))}
-            className="w-16 rounded border-gray-300 shadow-sm text-sm"
+            className="w-16 rounded border-gray-300 shadow-sm px-2 py-1.5 text-sm"
           />
           {item.measurement && (
             <span className="ml-1 text-sm text-gray-500">

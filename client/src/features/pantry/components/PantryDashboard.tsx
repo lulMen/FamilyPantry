@@ -20,7 +20,7 @@ function PantryDashboard({
         placeholder="Filter by name..."
         value={filterText}
         onChange={(e) => onFilterChange(e.target.value)}
-        className="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm text-sm"
+        className="flex-1 min-w-[200px] rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm"
       />
       <button
         onClick={onAddClick}

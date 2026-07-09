@@ -4,64 +4,28 @@ require("dotenv").config({ path: path.resolve(__dirname, "../.env") });
 const connectDB = require("../config/db.config");
 const Recipe = require("../models/Recipe.model");
 
+// =============================================================================
+// DEMO-ALIGNED RECIPE SEED
+//
+// IMPORTANT — NUTRITION DATA:
+// insertMany bypasses the controller, so Edamam is never called and all
+// nutrition fields default to 0. After running this script, run the
+// companion file server/tests/seed-nutrition.http to PUT each recipe
+// through the controller and populate Edamam values.
+//
+// Demo strategy for Requirement #5 (Nutritional Info):
+//   • Existing seeded recipes show cached nutrition values (after http update)
+//   • Create a NEW recipe live during demo → proves real-time computation
+//   • Edit ingredient → update → nutrition changes → proves dynamic behavior
+//   • Create second recipe with same ingredients at different quantities →
+//     compare calorie totals → proves values are not static
+// =============================================================================
 const recipes = [
-  {
-    name: "Garlic Butter Chicken",
-    description:
-      "A simple pan-seared chicken breast with a rich garlic butter sauce.",
-    ingredients: [
-      {
-        name: "Chicken Breast",
-        ingredientsQuantity: 2,
-        ingredientsMeasurements: "each",
-      },
-      {
-        name: "Butter",
-        ingredientsQuantity: 2,
-        ingredientsMeasurements: "tablespoon",
-      },
-      {
-        name: "Garlic Cloves",
-        ingredientsQuantity: 4,
-        ingredientsMeasurements: "each",
-      },
-      {
-        name: "Olive Oil",
-        ingredientsQuantity: 1,
-        ingredientsMeasurements: "tablespoon",
-      },
-      {
-        name: "Salt",
-        ingredientsQuantity: 1,
-        ingredientsMeasurements: "teaspoon",
-      },
-    ],
-    instructions: [
-      { description: "Season chicken breasts on both sides with salt." },
-      { description: "Heat olive oil in a skillet over medium-high heat." },
-      {
-        description:
-          "Sear chicken for 6-7 minutes per side until cooked through. Remove and set aside.",
-      },
-      {
-        description:
-          "Reduce heat to medium. Add butter and minced garlic to the same pan.",
-      },
-      {
-        description:
-          "Cook garlic for 1-2 minutes, then return chicken to the pan and spoon sauce over it.",
-      },
-    ],
-    notes: [
-      { description: "Pairs well with roasted vegetables or rice." },
-      {
-        description:
-          "Pound chicken to even thickness for more consistent cooking.",
-      },
-    ],
-    prepTime: 10,
-    cookTime: 20,
-  },
+  // ── Cross-reference demo (Requirement #4) ────────────────────────────────
+  // Pantry has Black Beans (6 total each) which covers the 2 cup requirement
+  // (raw quantity comparison: 6 >= 2). All other ingredients are NOT in the
+  // pantry, so the generated shopping list includes:
+  //   Corn Tortillas, Cumin, Chili Powder, Lime, Shredded Cheese
   {
     name: "Black Bean Tacos",
     description:
@@ -115,6 +79,65 @@ const recipes = [
     notes: [{ description: "Add salsa, sour cream, or avocado to taste." }],
     prepTime: 5,
     cookTime: 10,
+  },
+
+  // ── General catalog entries ───────────────────────────────────────────────
+  {
+    name: "Garlic Butter Chicken",
+    description:
+      "A simple pan-seared chicken breast with a rich garlic butter sauce.",
+    ingredients: [
+      {
+        name: "Chicken Breast",
+        ingredientsQuantity: 2,
+        ingredientsMeasurements: "each",
+      },
+      {
+        name: "Butter",
+        ingredientsQuantity: 2,
+        ingredientsMeasurements: "tablespoon",
+      },
+      {
+        name: "Garlic Cloves",
+        ingredientsQuantity: 4,
+        ingredientsMeasurements: "each",
+      },
+      {
+        name: "Olive Oil",
+        ingredientsQuantity: 1,
+        ingredientsMeasurements: "tablespoon",
+      },
+      {
+        name: "Salt",
+        ingredientsQuantity: 1,
+        ingredientsMeasurements: "teaspoon",
+      },
+    ],
+    instructions: [
+      { description: "Season chicken breasts on both sides with salt." },
+      { description: "Heat olive oil in a skillet over medium-high heat." },
+      {
+        description:
+          "Sear chicken for 6-7 minutes per side until cooked through. Remove and set aside.",
+      },
+      {
+        description:
+          "Reduce heat to medium. Add butter and minced garlic to the same pan.",
+      },
+      {
+        description:
+          "Cook garlic 1-2 minutes, return chicken and spoon sauce over it.",
+      },
+    ],
+    notes: [
+      { description: "Pairs well with roasted vegetables or rice." },
+      {
+        description:
+          "Pound chicken to even thickness for more consistent cooking.",
+      },
+    ],
+    prepTime: 10,
+    cookTime: 20,
   },
   {
     name: "Simple Pancakes",
@@ -170,7 +193,7 @@ const recipes = [
       },
       {
         description:
-          "Pour 1/4 cup batter per pancake. Cook until bubbles form, then flip and cook 1-2 more minutes.",
+          "Pour 1/4 cup batter per pancake. Cook until bubbles form, flip and cook 1-2 more minutes.",
       },
     ],
     notes: [
@@ -191,7 +214,10 @@ const seedRecipes = async () => {
   await connectDB();
   await Recipe.deleteMany({});
   await Recipe.insertMany(recipes);
-  console.log("Recipes seeded successfully!");
+  console.log(`Recipes seeded: ${recipes.length} items`);
+  console.log(
+    "⚠  Nutrition fields are 0 — run server/tests/seed-nutrition.http to populate via Edamam.",
+  );
   process.exit(0);
 };
 

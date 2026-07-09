@@ -292,7 +292,7 @@ function GroceryListManager() {
               value={newListName}
               onChange={(e) => setNewListName(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleCreateList()}
-              className="flex-1 rounded-md border-gray-300 shadow-sm text-sm"
+              className="flex-1 rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm"
               autoFocus
               disabled={isCreatingList}
             />

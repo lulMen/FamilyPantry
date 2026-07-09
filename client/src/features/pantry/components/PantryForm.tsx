@@ -112,7 +112,7 @@ function PantryForm({
           value={formData.name}
           onChange={handleChange}
           onBlur={() => setNameTouched(true)}
-          className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 sm:text-sm ${
+          className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 px-3 py-1.5 sm:text-sm ${
             nameError
               ? "border-red-500 focus:border-red-500"
               : "border-gray-300 focus:border-blue-500"
@@ -132,7 +132,7 @@ function PantryForm({
           id="quantity"
           value={formData.quantity}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 sm:text-sm"
         />
 
         {/* Measurement */}
@@ -146,7 +146,7 @@ function PantryForm({
           id="measurement"
           value={formData.measurement}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 sm:text-sm"
         >
           <option value="pound">Pound</option>
           <option value="gram">Gram</option>
@@ -172,7 +172,7 @@ function PantryForm({
           id="acquiredDate"
           value={formData.acquiredDate}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 sm:text-sm"
         />
 
         {/* Expiration Date */}
@@ -187,7 +187,7 @@ function PantryForm({
           id="expirationDate"
           value={formData.expirationDate}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 sm:text-sm"
         />
 
         {/* Storage Type */}
@@ -201,7 +201,7 @@ function PantryForm({
           id="storageType"
           value={formData.storageType}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 sm:text-sm"
         >
           <option value="Canned">Canned</option>
           <option value="Fresh">Fresh</option>
@@ -222,7 +222,7 @@ function PantryForm({
           id="storageLocation"
           value={formData.storageLocation}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 sm:text-sm"
         />
 
         {/* Minimum Stock Level */}
@@ -237,7 +237,7 @@ function PantryForm({
           id="minStockLevel"
           value={formData.minStockLevel}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 sm:text-sm"
         />
 
         {/* Track Stock */}
@@ -264,7 +264,7 @@ function PantryForm({
           id="cost"
           value={formData.cost}
           onChange={handleChange}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 sm:text-sm"
         />
       </div>
 

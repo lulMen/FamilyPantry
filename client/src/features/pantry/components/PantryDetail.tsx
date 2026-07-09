@@ -51,7 +51,7 @@ function PantryDetail({
 
   return (
     <Sheet open={!!item} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent side="right" className="w-full sm:w-96 overflow-y-auto">
+      <SheetContent side="right" className="w-full sm:w-96 overflow-y-auto p-6">
         {formMode === "edit" ? (
           <PantryForm
             selectedItem={item}

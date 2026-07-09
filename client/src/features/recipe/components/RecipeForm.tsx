@@ -37,7 +37,7 @@ const defaultValues: Omit<Recipe, "_id" | "createdBy" | "updatedBy"> = {
 };
 
 const inputClass = (hasError: boolean) =>
-  `flex-1 rounded-md shadow-sm sm:text-sm ${
+  `flex-1 rounded-md shadow-sm px-3 py-1.5 sm:text-sm ${
     hasError
       ? "border-red-500 focus:border-red-500"
       : "border-gray-300 focus:border-blue-500"
@@ -215,10 +215,7 @@ function RecipeForm({
   };
 
   return (
-    <form
-      className="space-y-6 overflow-y-auto max-h-[80vh] pr-2"
-      onSubmit={handleSubmit}
-    >
+    <form className="space-y-6 pr-2" onSubmit={handleSubmit}>
       {error && <ErrorBanner message={error} />}
       {validationMessage && <ErrorBanner message={validationMessage} />}
 
@@ -236,7 +233,7 @@ function RecipeForm({
           value={formData.name}
           onChange={handleChange}
           onBlur={() => setNameTouched(true)}
-          className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 sm:text-sm ${
+          className={`mt-1 block w-full rounded-md shadow-sm focus:ring-blue-500 px-3 py-1.5 sm:text-sm ${
             nameError
               ? "border-red-500 focus:border-red-500"
               : "border-gray-300 focus:border-blue-500"
@@ -258,7 +255,7 @@ function RecipeForm({
           value={formData.description}
           onChange={handleChange}
           rows={2}
-          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+          className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 sm:text-sm"
         />
       </div>
 
@@ -276,7 +273,7 @@ function RecipeForm({
             id="prepTime"
             value={formData.prepTime}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 sm:text-sm"
           />
         </div>
         <div className="flex-1">
@@ -291,7 +288,7 @@ function RecipeForm({
             id="cookTime"
             value={formData.cookTime}
             onChange={handleChange}
-            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-3 py-1.5 sm:text-sm"
           />
         </div>
       </div>
@@ -307,20 +304,22 @@ function RecipeForm({
               ? "Required"
               : null;
           return (
-            <div key={index} className="mb-2">
+            <div key={index} className="mb-3 flex flex-col gap-1">
+              {/* Row 1: name */}
+              <input
+                type="text"
+                placeholder="Ingredient name"
+                value={ing.name}
+                onChange={(e) =>
+                  handleIngredientChange(index, "name", e.target.value)
+                }
+                onBlur={() =>
+                  setTouchedIngredients((prev) => new Set(prev).add(index))
+                }
+                className={inputClass(!!ingError)}
+              />
+              {/* Row 2: qty + measurement + remove */}
               <div className="flex gap-2 items-center">
-                <input
-                  type="text"
-                  placeholder="Name"
-                  value={ing.name}
-                  onChange={(e) =>
-                    handleIngredientChange(index, "name", e.target.value)
-                  }
-                  onBlur={() =>
-                    setTouchedIngredients((prev) => new Set(prev).add(index))
-                  }
-                  className={inputClass(!!ingError)}
-                />
                 <input
                   type="number"
                   placeholder="Qty"
@@ -332,7 +331,7 @@ function RecipeForm({
                       Number(e.target.value),
                     )
                   }
-                  className="w-16 rounded-md border-gray-300 shadow-sm sm:text-sm"
+                  className="w-20 rounded-md border-gray-300 shadow-sm px-2 py-1.5 sm:text-sm"
                 />
                 <select
                   value={ing.ingredientsMeasurements}
@@ -343,7 +342,7 @@ function RecipeForm({
                       e.target.value,
                     )
                   }
-                  className="rounded-md border-gray-300 shadow-sm sm:text-sm"
+                  className="flex-1 rounded-md border-gray-300 shadow-sm px-3 py-1.5 sm:text-sm"
                 >
                   <option value="each">Each</option>
                   <option value="cup">Cup</option>
@@ -365,7 +364,7 @@ function RecipeForm({
                       ? "At least one ingredient is required"
                       : undefined
                   }
-                  className={`text-sm px-2 ${
+                  className={`text-sm px-2 shrink-0 ${
                     formData.ingredients.length <= 1
                       ? "text-gray-300 cursor-not-allowed"
                       : "text-red-500 hover:text-red-700"

@@ -75,7 +75,7 @@ function RecipeDetail({
     <Sheet open={!!recipe} onOpenChange={(open) => !open && onClose()}>
       <SheetContent
         side="right"
-        className="w-full sm:w-[480px] overflow-y-auto"
+        className="w-full sm:w-[560px] overflow-y-auto overflow-x-hidden p-6"
       >
         {formMode === "edit" ? (
           <RecipeForm

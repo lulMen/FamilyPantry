@@ -103,7 +103,7 @@ function GroceryListItemTable({
               value={itemName}
               onChange={(e) => setItemName(e.target.value)}
               onBlur={() => setNameTouched(true)}
-              className={`w-full rounded-md shadow-sm text-sm ${
+              className={`w-full rounded-md shadow-sm px-3 py-1.5 text-sm ${
                 isNameInvalid ? "border-red-400" : "border-gray-300"
               }`}
             />
@@ -117,14 +117,14 @@ function GroceryListItemTable({
             type="number"
             value={quantityNeeded}
             onChange={(e) => setQuantityNeeded(Number(e.target.value))}
-            className="w-16 rounded-md border-gray-300 shadow-sm text-sm"
+            className="w-16 rounded-md border-gray-300 shadow-sm px-2 py-1.5 text-sm"
           />
           <select
             value={measurement}
             onChange={(e) =>
               setMeasurement(e.target.value as RecipeMeasurement)
             }
-            className="rounded-md border-gray-300 shadow-sm text-sm"
+            className="rounded-md border-gray-300 shadow-sm px-3 py-1.5 text-sm"
           >
             <option value="each">Each</option>
             <option value="cup">Cup</option>
