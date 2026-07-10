@@ -13,8 +13,7 @@ interface RecipeFormProps {
     data: Omit<Recipe, "_id" | "createdBy" | "updatedBy">,
   ) => Promise<void>;
   onCancel: () => void;
-  // Server-side error from the most recent submit attempt — shown at the
-  // top of the form, contextual to whichever Dialog/Sheet this renders in.
+
   error?: string | null;
 }
 
@@ -71,10 +70,6 @@ function RecipeForm({
       : defaultValues,
   );
 
-  // Required-field validation. "name" (recipe), each ingredient's "name",
-  // and each instruction's "description" are the only freeform fields the
-  // schema actually requires without a default — quantity/measurement
-  // fields always have a pre-filled value via their input/select defaults.
   const [nameTouched, setNameTouched] = useState(false);
   const [touchedIngredients, setTouchedIngredients] = useState<Set<number>>(
     new Set(),

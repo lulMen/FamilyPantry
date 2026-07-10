@@ -23,8 +23,7 @@ interface RecipeDetailProps {
   onSubmit: (
     data: Omit<Recipe, "_id" | "createdBy" | "updatedBy">,
   ) => Promise<void>;
-  // Contextual error for the most recent edit/delete attempt — shown inside
-  // this Sheet since its full-screen overlay would hide a page-level banner.
+
   error?: string | null;
   onDismissError?: () => void;
 }

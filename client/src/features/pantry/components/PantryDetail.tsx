@@ -20,9 +20,7 @@ interface PantryDetailProps {
   onSubmit: (
     data: Omit<PantryItemType, "_id" | "createdBy" | "updatedBy">,
   ) => Promise<void>;
-  // Contextual error for whatever action was just attempted from within
-  // this Sheet (edit submit or delete) — the Sheet's full-screen overlay
-  // would otherwise hide a page-level banner, so it has to live in here.
+
   error?: string | null;
   onDismissError?: () => void;
 }
